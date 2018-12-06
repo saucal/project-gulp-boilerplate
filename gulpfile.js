@@ -72,7 +72,7 @@ gulp.task( 'js', function() {
 			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
 			.pipe( $.cached( 'js' ) )
 			.pipe( gulp.dest( folder + PATHS.jsDest ) )
-			.pipe( $.filter( '**/*.js' ) )
+			.pipe( $.filter( [ '**/*.js', '!**/*.min.js' ] ) )
 			.pipe( $.uglify() )
 			.pipe( $.rename({suffix: '.min'}) )
 			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
