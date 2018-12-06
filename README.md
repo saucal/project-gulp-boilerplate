@@ -16,3 +16,30 @@ assets
         js
             **.js
 ```
+
+## Usage
+
+`gulp`
+
+Will compile things in dev mode (with source maps)
+
+### Options
+
+The following options can be combined as desired.
+
+`gulp --production`
+
+Will disable the source map generation
+
+`gulp --noprefix`
+
+Disable the use of the autoprefixer for css properties
+
+`gulp --watch`
+
+Will keep the process running and recompile after you change any of the source files
+
+`gulp --bs`
+
+Will enable browser-sync support. This feature require to have the `dev-domain.json` file with a string setting the domain that will be used for refresh (usually the domain you use to access your local env)
+
