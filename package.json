@@ -1,0 +1,43 @@
+{
+  "name": "project-name",
+  "description": "Project Description",
+  "version": "0.0.1",
+  "main": "gulpfile.js",
+  "dependencies": {},
+  "devDependencies": {
+    "browser-sync": "^2.18.13",
+    "eslint": "^4.11.0",
+    "eslint-config-wordpress": "^2.0.0",
+    "gulp": ">=3.9.0",
+    "gulp-autoprefixer": ">=3.0.2",
+    "gulp-cached": "^1.1.1",
+    "gulp-cheerio": ">=0.6.2",
+    "gulp-clean-css": "^3.9.0",
+    "gulp-compass": ">=2.1.0",
+    "gulp-filter": "^5.0.1",
+    "gulp-load-plugins": ">=0.10.0",
+    "gulp-plumber": ">=1.1.0",
+    "gulp-rename": ">=1.2.2",
+    "gulp-sass": ">=2.0.4",
+    "gulp-size": ">=2.0.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-svg-sprite": ">=1.2.10",
+    "gulp-svgmin": ">=1.2.0",
+    "gulp-svgstore": ">=5.0.5",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "merge-stream": "^1.0.1",
+    "path": ">=0.12.7",
+    "stylelint-config-wordpress": "^12.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "wordpress",
+    "wordpress theme",
+    "wordpress plugin"
+  ],
+  "author": "SAU/CAL",
+  "license": "ISC"
+}
