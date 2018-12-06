@@ -49,7 +49,7 @@ gulp.task( 'sass', function() {
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
 			.pipe( $.sass().on( 'error', $.sass.logError ) )
-			.pipe( ! CONFIG.noprefix ? $.autoprefixer({browsers: [ 'last 2 versions', '> 1%' ]}) : $.util.noop() )
+			.pipe( ! CONFIG.noprefix ? $.autoprefixer({browsers: [ 'last 5 versions', '> 1%' ]}) : $.util.noop() )
 			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/css' ) : $.util.noop() )
 			.pipe( $.cached( 'sass' ) )
 			.pipe( gulp.dest( folder + PATHS.css ) )
@@ -84,17 +84,15 @@ gulp.task( 'js', function() {
 });
 
 gulp.task( 'browser-sync', function() {
-	var files = WATCH.css.concat( WATCH.jsDest );
+	var files = WATCH.css.concat( WATCH.jsDest ).concat( WATCH.php );
 
-	CONFIG.bs ? DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) ) : '';
-	CONFIG.bs ? $.browserSync.init( files, {proxy: DOMAIN}) : $.util.noop();
+	DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) );
+	$.browserSync.init( files, {proxy: DOMAIN});
 });
 
-gulp.task( 'default', [ 'sass', 'js', 'browser-sync' ], function() {
+gulp.task( 'default', [ 'sass', 'js' ], function() {
 	if ( CONFIG.watch ) {
-		gulp.watch( WATCH.php, function() {
-			return $.browserSync.reload();
-		});
+		CONFIG.bs ? gulp.start( 'browser-sync' ) : $.util.noop();
 		gulp.watch( WATCH.sass, [ 'sass' ]);
 		gulp.watch( WATCH.jsSource, [ 'js' ]);
 	}
