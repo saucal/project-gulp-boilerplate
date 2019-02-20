@@ -90,7 +90,7 @@ gulp.task( 'browser-sync', function() {
 	$.browserSync.init( files, {proxy: DOMAIN});
 });
 
-gulp.task( 'default', [ 'sass', 'js' ], function() {
+gulp.task( 'default', gulp.parallel('sass', 'js'), function() {
 	if ( CONFIG.watch ) {
 		CONFIG.bs ? gulp.start( 'browser-sync' ) : $.util.noop();
 		gulp.watch( WATCH.sass, [ 'sass' ]);
