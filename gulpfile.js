@@ -98,4 +98,3 @@ gulp.task( 'default', gulp.parallel('sass', 'js'), function() {
 	}
 });
 
-//gulp.task( 'production', ['sass-production', 'js-production'] );
