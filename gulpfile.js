@@ -45,6 +45,7 @@ function buildPath( path ) {
 
 gulp.task( 'sass', function() {
 	var tasks = FOLDERS.map( function( folder ) {
+
 		return gulp.src( folder + PATHS.sass + '/**/*.scss' )
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
@@ -83,18 +84,35 @@ gulp.task( 'js', function() {
 	return merge( tasks );
 });
 
-gulp.task( 'browser-sync', function() {
+gulp.task( 'browser-sync', function(done) {
 	var files = WATCH.css.concat( WATCH.jsDest ).concat( WATCH.php );
-
-	DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) );
-	$.browserSync.init( files, {proxy: DOMAIN});
+    try {
+        DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) );
+    } catch( e ) {
+        return done(e);
+    }
+    $.browserSync.init( files, {proxy: DOMAIN});
+    return done();
 });
 
-gulp.task( 'default', gulp.parallel('sass', 'js'), function() {
-	if ( CONFIG.watch ) {
-		CONFIG.bs ? gulp.start( 'browser-sync' ) : $.util.noop();
-		gulp.watch( WATCH.sass, [ 'sass' ]);
-		gulp.watch( WATCH.jsSource, [ 'js' ]);
-	}
-});
+var doWatch = function(done) {
+    gulp.watch( WATCH.sass, gulp.parallel( 'sass' ) );
+    gulp.watch( WATCH.jsSource, gulp.parallel( 'js' ) );
+}
+var watch_task;
+if( CONFIG.bs ) {
+    watch_task = gulp.series('browser-sync', doWatch);
+} else {
+    watch_task = doWatch;
+}
 
+gulp.task( 'watch', watch_task );
+
+var default_task;
+if ( CONFIG.watch ) {
+	default_task = gulp.series( gulp.parallel('sass', 'js'), 'watch' );
+} else {
+	default_task = gulp.parallel('sass', 'js');
+}
+
+gulp.task( 'default', default_task);
