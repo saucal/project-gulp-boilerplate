@@ -1,8 +1,9 @@
-var $, gulp, merge, fs, CONFIG, FOLDERS, DOMAIN, PATHS, WATCH;
+var $, gulp, merge, fs, path, CONFIG, FOLDERS, DOMAIN, PATHS, WATCH;
 
 gulp = require( 'gulp' );
 merge = require( 'merge-stream' );
 fs = require( 'fs' );
+path = require( 'path' );
 $ = require( 'gulp-load-plugins' )({pattern: '*'});
 
 CONFIG = {
@@ -42,6 +43,32 @@ function buildPath( path ) {
 		return folder + path;
 	});
 }
+
+gulp.task( 'zip', function() {
+	var tasks = FOLDERS.map( function( folder ) {
+		var basename = path.basename(path.resolve(folder));
+		var filename = folder + "/" + basename + ".zip";
+		try {
+			fs.unlinkSync(filename);
+		} catch( e ) {
+			// do nothing
+		} 
+		return gulp.src([
+				folder + '/**/*', 
+				'!**/node_modules/**', 
+				'!**/gulpfile.js', 
+				'!**/.DS_Store', 
+				'!**/package.json', 
+				'!**/package-lock.json', 
+				'!**/.git/**'
+			], {
+				base: folder + '/..',
+			})
+			.pipe($.vinylZip.dest(filename))
+			.pipe( $.size({title: folder + ' zip'}) );
+	});
+	return merge( tasks );
+} )
 
 gulp.task( 'sass', function() {
 	var tasks = FOLDERS.map( function( folder ) {
@@ -108,11 +135,15 @@ if( CONFIG.bs ) {
 
 gulp.task( 'watch', watch_task );
 
+gulp.task( 'build', gulp.parallel( 'sass', 'js' ) );
+
+gulp.task( 'package', gulp.series( 'build', 'zip' ) );
+
 var default_task;
 if ( CONFIG.watch ) {
-	default_task = gulp.series( gulp.parallel('sass', 'js'), 'watch' );
+	default_task = gulp.series( 'build', 'watch' );
 } else {
-	default_task = gulp.parallel('sass', 'js');
+	default_task = gulp.series( 'build' );
 }
 
 gulp.task( 'default', default_task);

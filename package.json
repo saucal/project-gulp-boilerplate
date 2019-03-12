@@ -26,6 +26,7 @@
     "gulp-svgstore": ">=7.0.1",
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.8",
+    "gulp-vinyl-zip": "^2.1.2",
     "merge-stream": "^1.0.1",
     "path": ">=0.12.7",
     "stylelint-config-wordpress": "^13.1.0"
