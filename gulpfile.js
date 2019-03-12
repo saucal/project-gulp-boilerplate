@@ -135,9 +135,107 @@ if( CONFIG.bs ) {
 
 gulp.task( 'watch', watch_task );
 
+var textDomain = [];
+
+function set_textdomain( resolve ) {
+	if( textDomain.length ) {
+		return resolve( textDomain );
+	}
+
+	var tasks = FOLDERS.map( function( path, i ) {
+		return gulp
+			.src([path + '/*.php', path + '/*.css'])
+			.pipe($.filter(function(thisPath){
+				var thisPath = path + '/' + thisPath.relative;
+				var phpFile = fs.readFileSync( thisPath );
+
+				const regex = /^(?:\s+\*\s+)?(.+?)\:\s+(.+)$/gm;
+				let m;
+
+				var data = {
+					text_domain: '',
+					path: '',
+				}
+
+				while ((m = regex.exec(phpFile)) !== null) {
+					// This is necessary to avoid infinite loops with zero-width matches
+					if (m.index === regex.lastIndex) {
+						regex.lastIndex++;
+					}
+
+					if( m[1] == 'Text Domain' && m[2] ) {
+						data.text_domain = m[2];
+					}
+
+					if( m[1] == 'Domain Path' && m[2] ) {
+						data.path = m[2].substr(1);
+					}
+				}
+
+				if( data.text_domain ) {
+					textDomain[i] = data;
+				}
+			}))
+	});
+	return merge( tasks );
+}
+
+var do_translate = function() {
+	var tasks = FOLDERS.map( function( folder, i ) {
+		var path = textDomain[i].path;
+		if( path ) {
+			path += '/';
+		} else {
+			path = 'languages/';
+		}
+		
+		return gulp.src( folder + '/**/*.php' )
+			.pipe($.wpPot( {
+				domain: textDomain[i].text_domain,
+				headers: false
+			} ))
+			.pipe( gulp.dest( path + textDomain[i].text_domain + '.pot' ) )
+			.pipe( $.size({title: folder + ' pot'}) );
+	});
+	return merge( tasks );
+}
+
+gulp.task( 'translate', gulp.series( set_textdomain, do_translate ) );
+
+var textDomainFunctions = [ //List keyword specifications
+	'__:1,2d',
+	'_e:1,2d',
+	'_x:1,2c,3d',
+	'esc_html__:1,2d',
+	'esc_html_e:1,2d',
+	'esc_html_x:1,2c,3d',
+	'esc_attr__:1,2d',
+	'esc_attr_e:1,2d',
+	'esc_attr_x:1,2c,3d',
+	'_ex:1,2c,3d',
+	'_n:1,2,4d',
+	'_nx:1,2,4c,5d',
+	'_n_noop:1,2,3d',
+	'_nx_noop:1,2,3c,4d'
+];
+
+var do_translate_check = function() {
+	var tasks = FOLDERS.map( function( folder, i ) {
+		return gulp
+			.src(folder + '/**/*.php')
+			.pipe($.checktextdomain({
+				text_domain: textDomain[i].text_domain, //Specify allowed domain(s)
+				keywords: textDomainFunctions,
+			}));
+	});
+	return merge( tasks );
+}
+
+gulp.task( 'translate_check', gulp.series( set_textdomain, do_translate_check ) );
+
 gulp.task( 'build', gulp.parallel( 'sass', 'js' ) );
 
-gulp.task( 'package', gulp.series( 'build', 'zip' ) );
+gulp.task( 'package', gulp.series( 'build', 'translate', 'zip' ) );
 
 var default_task;
 if ( CONFIG.watch ) {
