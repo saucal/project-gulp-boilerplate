@@ -4,6 +4,7 @@ gulp = require( 'gulp' );
 merge = require( 'merge-stream' );
 fs = require( 'fs' );
 path = require( 'path' );
+semver = require( 'semver' );
 $ = require( 'gulp-load-plugins' )({pattern: '*'});
 
 CONFIG = {
@@ -135,11 +136,11 @@ if( CONFIG.bs ) {
 
 gulp.task( 'watch', watch_task );
 
-var textDomain = [];
+var folderInfo = [];
 
-function set_textdomain( resolve ) {
-	if( textDomain.length ) {
-		return resolve( textDomain );
+function set_folderinfo( resolve ) {
+	if( folderInfo.length ) {
+		return resolve( folderInfo );
 	}
 
 	var tasks = FOLDERS.map( function( path, i ) {
@@ -168,12 +169,16 @@ function set_textdomain( resolve ) {
 					}
 
 					if( m[1] == 'Domain Path' && m[2] ) {
-						data.path = m[2].substr(1);
+						data.langPath = m[2].substr(1);
+					}
+
+					if( m[1] == 'Version' && m[2] ) {
+						data.version = m[2];
 					}
 				}
 
 				if( data.text_domain ) {
-					textDomain[i] = data;
+					folderInfo[i] = data;
 				}
 			}))
 	});
@@ -182,7 +187,7 @@ function set_textdomain( resolve ) {
 
 var do_translate = function() {
 	var tasks = FOLDERS.map( function( folder, i ) {
-		var path = textDomain[i].path;
+		var path = folderInfo[i].langPath;
 		if( path ) {
 			path += '/';
 		} else {
@@ -191,16 +196,16 @@ var do_translate = function() {
 		
 		return gulp.src( folder + '/**/*.php' )
 			.pipe($.wpPot( {
-				domain: textDomain[i].text_domain,
+				domain: folderInfo[i].text_domain,
 				headers: false
 			} ))
-			.pipe( gulp.dest( path + textDomain[i].text_domain + '.pot' ) )
+			.pipe( gulp.dest( path + folderInfo[i].text_domain + '.pot' ) )
 			.pipe( $.size({title: folder + ' pot'}) );
 	});
 	return merge( tasks );
 }
 
-gulp.task( 'translate', gulp.series( set_textdomain, do_translate ) );
+gulp.task( 'translate', gulp.series( set_folderinfo, do_translate ) );
 
 var textDomainFunctions = [ //List keyword specifications
 	'__:1,2d',
@@ -224,14 +229,34 @@ var do_translate_check = function() {
 		return gulp
 			.src(folder + '/**/*.php')
 			.pipe($.checktextdomain({
-				text_domain: textDomain[i].text_domain, //Specify allowed domain(s)
+				text_domain: folderInfo[i].text_domain, //Specify allowed domain(s)
 				keywords: textDomainFunctions,
 			}));
 	});
 	return merge( tasks );
 }
 
-gulp.task( 'translate_check', gulp.series( set_textdomain, do_translate_check ) );
+function do_bump() {
+	var tasks = FOLDERS.map( function( folder, i ) {
+		var thisVersion = folderInfo[i].version;
+		var thisVersionRegEx = thisVersion.replace('.', '\\.');
+		var regex = new RegExp('(version:?\\s+)('+thisVersionRegEx+')', 'gi')
+		return gulp.src( [ 
+				folder + '/**/*.php', 
+				'!**/node_modules/**' // exclude node_modules
+			] )
+			.pipe($.replace(regex, function(match, g1, origVersion){
+				var newVersion = semver.inc( origVersion, 'patch' );
+				return g1 + newVersion;
+			}))
+			.pipe( gulp.dest( folder ) )
+	});
+	return merge( tasks );
+}
+
+gulp.task( 'bump', gulp.series( set_folderinfo, do_bump ) );
+
+gulp.task( 'translate_check', gulp.series( set_folderinfo, do_translate_check ) );
 
 gulp.task( 'build', gulp.parallel( 'sass', 'js' ) );
 
