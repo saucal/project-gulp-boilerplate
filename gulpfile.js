@@ -77,7 +77,7 @@ gulp.task( 'sass', function() {
 		return gulp.src( folder + PATHS.sass + '/**/*.scss' )
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
-			.pipe( $.sass().on( 'error', $.sass.logError ) )
+			.pipe( $.sass({ precision: 10 }).on( 'error', $.sass.logError ) )
 			.pipe( ! CONFIG.noprefix ? $.autoprefixer({browsers: [ 'last 5 versions', '> 1%' ]}) : $.util.noop() )
 			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/css' ) : $.util.noop() )
 			.pipe( $.cached( 'sass' ) )
