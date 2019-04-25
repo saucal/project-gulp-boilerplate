@@ -237,6 +237,26 @@ var do_translate_check = function() {
 }
 
 function do_bump() {
+	var versionBump = false;
+	var levelBump = false;
+	if ( typeof $.util.env.version !== 'undefined' ) {
+		switch ( $.util.env.version ) {
+			case 'major':
+			case 'premajor':
+			case 'minor':
+			case 'preminor':
+			case 'patch':
+			case 'prepatch':
+			case 'prerelease':
+				levelBump = $.util.env.version;
+				break;
+			default:
+				versionBump = $.util.env.version;
+				break;
+		}
+	} else {
+		levelBump = 'patch';
+	}
 	var tasks = FOLDERS.map( function( folder, i ) {
 		var thisVersion = folderInfo[i].version;
 		var thisVersionRegEx = thisVersion.replace('.', '\\.');
@@ -246,7 +266,12 @@ function do_bump() {
 				'!**/node_modules/**' // exclude node_modules
 			] )
 			.pipe($.replace(regex, function(match, g1, origVersion){
-				var newVersion = semver.inc( origVersion, 'patch' );
+				var newVersion;
+				if( levelBump ) {
+					newVersion = semver.inc( origVersion, levelBump );
+				} else {
+					newVersion = versionBump;
+				}
 				return g1 + newVersion;
 			}))
 			.pipe( gulp.dest( folder ) )
