@@ -1,10 +1,11 @@
-var $, gulp, merge, fs, path, CONFIG, FOLDERS, DOMAIN, PATHS, WATCH;
+var $, gulp, merge, fs, path, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, WATCH;
 
 gulp = require( 'gulp' );
 merge = require( 'merge-stream' );
 fs = require( 'fs' );
 path = require( 'path' );
 semver = require( 'semver' );
+nodegit = require( 'nodegit' );
 $ = require( 'gulp-load-plugins' )({pattern: '*'});
 
 CONFIG = {
@@ -154,8 +155,10 @@ function set_folderinfo( resolve ) {
 				let m;
 
 				var data = {
+					mainFilePath: '',
 					text_domain: '',
-					path: '',
+					langPath: '',
+					version: '',
 				}
 
 				while ((m = regex.exec(phpFile)) !== null) {
@@ -177,7 +180,8 @@ function set_folderinfo( resolve ) {
 					}
 				}
 
-				if( data.text_domain ) {
+				if( data.version ) {
+					data.mainFilePath = thisPath;
 					folderInfo[i] = data;
 				}
 			}))
@@ -236,7 +240,7 @@ var do_translate_check = function() {
 	return merge( tasks );
 }
 
-function do_bump() {
+async function do_bump() {
 	var versionBump = false;
 	var levelBump = false;
 	if ( typeof $.util.env.version !== 'undefined' ) {
@@ -257,15 +261,42 @@ function do_bump() {
 	} else {
 		levelBump = 'patch';
 	}
+	var diff = await getDiffFiles();
 	var tasks = FOLDERS.map( function( folder, i ) {
-		var thisVersion = folderInfo[i].version;
-		var thisVersionRegEx = thisVersion.replace('.', '\\.');
-		var regex = new RegExp('(version:?\\s+)('+thisVersionRegEx+')', 'gi')
-		return gulp.src( [ 
+		var origVersion = folderInfo[i].version;
+		var regex = new RegExp('(version:?\\s+)((?:[0-9]+\.?){1,3})', 'gi');
+
+		var gulpSrc;
+
+		if ( typeof $.util.env.allfiles !== 'undefined' ) {
+			var filesToExplore = [ 
 				folder + '/**/*.php', 
 				'!**/node_modules/**' // exclude node_modules
-			] )
-			.pipe($.replace(regex, function(match, g1, origVersion){
+			];
+			gulpSrc = gulp.src( filesToExplore );
+		} else {
+			var realPath = path.resolve(folder);
+			var diffFilesOnFolder = diff.map(function(filePath){
+				var resolvedPath = path.resolve(filePath);
+				var withinDir = resolvedPath.indexOf(realPath + path.sep) === 0;
+				if( ! withinDir ) {
+					return false;
+				} else {
+					return folder + resolvedPath.substr( realPath.length ).replace(new RegExp('\\' + path.sep, 'g'), "/");
+				}
+			});
+			diffFilesOnFolder = diffFilesOnFolder.filter(function(cont){
+				return cont ? true : false;
+			});
+			diffFilesOnFolder.unshift(folderInfo[i].mainFilePath)
+			diffFilesOnFolder.push('!**/node_modules/**'); // exclude node_modules
+
+			gulpSrc = gulp.src( diffFilesOnFolder, { base: folder + "/" } )
+				.pipe( $.filter( [ '**/*.php' ] ) )
+		}
+
+		return gulpSrc
+			.pipe($.replace(regex, function(match, g1, oldFileVersion){
 				var newVersion;
 				if( levelBump ) {
 					newVersion = semver.inc( origVersion, levelBump );
@@ -292,6 +323,28 @@ if ( CONFIG.watch ) {
 	default_task = gulp.series( 'build', 'watch' );
 } else {
 	default_task = gulp.series( 'build' );
+}
+
+async function getDiffFiles() {
+	var repository = await nodegit.Repository.open('.');
+	var currCommit = await repository.getHeadCommit();
+	var mastCommit = await repository.getMasterCommit();
+
+	var currTree = await currCommit.getTree();
+	var mastTree = await mastCommit.getTree();
+
+	var diff = await currTree.diff(mastTree);
+	diff = await diff.patches();
+
+	diff = diff.map(function(diffFile) {
+		if( diffFile.isDeleted() ) {
+			return false;
+		}
+		return "./"  + diffFile.newFile().path();
+	}).filter(function(cont){
+		return cont ? true : false;
+	});
+	return diff;
 }
 
 gulp.task( 'default', default_task);
