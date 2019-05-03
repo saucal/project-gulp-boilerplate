@@ -203,7 +203,7 @@ var do_translate = function() {
 				domain: folderInfo[i].text_domain,
 				headers: false
 			} ))
-			.pipe( gulp.dest( path + folderInfo[i].text_domain + '.pot' ) )
+			.pipe( gulp.dest( folder + '/' + path + folderInfo[i].text_domain + '.pot' ) )
 			.pipe( $.size({title: folder + ' pot'}) );
 	});
 	return merge( tasks );
