@@ -22,6 +22,7 @@ FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
  // Here are defined relateve paths for source files, dest paths and maps
  // Change them if you know what you are doing or just stick to folder structure convention
  PATHS = {
+ 	source: '/assets/source',
 	sass: '/assets/source/sass',
 	css: '/assets/css',
 	jsSource: '/assets/source/js',
@@ -94,9 +95,57 @@ gulp.task( 'sass', function() {
 	return merge( tasks );
 });
 
+var concatConfig = {};
+
+function get_concat_settings( folder, prefix ) {
+	var filePath = 0 , concatFiles = 0, concatName = 0;
+
+	// read files into the global variable. TODO: Needs polishing
+	concatConfig[folder] = []; 
+	try {
+		concatConfig[folder] = JSON.parse( fs.readFileSync( folder + PATHS.source + '/concat.json' ) );
+	} catch (err) {
+
+	}
+	concatConfig[folder].forEach(function(item){
+		item.files = item.files.map(function(item){
+			return folder + PATHS.source + '/' + item;
+		})
+	})
+
+	concatFiles = JSON.parse( JSON.stringify( concatConfig[folder] ) );
+
+	if( prefix ) {
+		concatFiles = concatFiles.filter(function( item ){
+			return item.name.substr(0, prefix.length) === prefix;
+		});
+	}
+
+	return concatFiles;
+}
+
+function get_concat_ignored( concatFiles ) {
+	var paths = [];
+	concatFiles.forEach(function(item, i){
+		item.files.forEach(function(item){
+			paths.push( '!' + item )
+		});
+	})
+	return paths;
+}
+
 gulp.task( 'js', function() {
 	var tasks = FOLDERS.map( function( folder ) {
-		return gulp.src( folder + PATHS.jsSource + '/**/*.js' )
+		// get concat sources for this particular folder (from the source folder)
+		var concatFiles = get_concat_settings( folder, 'js' );
+		// use the concat sources as ignored paths in the "base" process
+		var includePaths = get_concat_ignored( concatFiles );
+		includePaths.unshift(folder + PATHS.jsSource + '/**/*.js');
+
+		var folderTasks = [];
+
+		// Do everything not included in the concat
+		var base = gulp.src( includePaths )
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
 			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
@@ -109,6 +158,30 @@ gulp.task( 'js', function() {
 			.pipe( $.cached( 'js' ) )
 			.pipe( gulp.dest( folder + PATHS.jsDest ) )
 			.pipe( $.size({title: folder + ' js'}) );
+
+		folderTasks.push(base);
+
+		// Process each concat dest as it's individual file
+		concatFiles.forEach(function(dest) {
+			var thisDest = gulp.src( dest.files )
+				.pipe( $.plumber() )
+				.pipe( $.sourcemaps.init() )
+				.pipe( $.concat( path.basename( dest.name ) ) )
+				.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
+				.pipe( $.cached( 'js' ) )
+				.pipe( gulp.dest( folder + PATHS.jsDest ) )
+				.pipe( $.filter( [ '**/*.js' ] ) )
+				.pipe( $.uglify() )
+				.pipe( $.rename({suffix: '.min'}) )
+				.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
+				.pipe( $.cached( 'js' ) )
+				.pipe( gulp.dest( folder + PATHS.jsDest ) )
+				.pipe( $.size({title: folder + ' concat ' + dest.name }) );
+			
+			folderTasks.push( thisDest );
+		})
+
+		return merge( folderTasks );
 	});
 	return merge( tasks );
 });
