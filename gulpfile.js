@@ -1,4 +1,4 @@
-var $, gulp, merge, fs, path, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, WATCH;
+var $, _, gulp, merge, fs, path, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, WATCH;
 
 gulp = require( 'gulp' );
 merge = require( 'merge-stream' );
@@ -6,6 +6,7 @@ fs = require( 'fs' );
 path = require( 'path' );
 semver = require( 'semver' );
 nodegit = require( 'nodegit' );
+_ = require( 'underscore' );
 $ = require( 'gulp-load-plugins' )({pattern: '*'});
 
 CONFIG = {
@@ -15,40 +16,149 @@ CONFIG = {
 	noprefix: !! $.util.env.noprefix
 };
 
+// Here are defined relateve paths for source files, dest paths and maps
+// Change them if you know what you are doing or just stick to folder structure convention
+PATHS = {
+	assets: '/assets',
+	source: '/assets/source',
+	sass: '/assets/source/sass',
+	jsSource: '/assets/source/js',
+	css: '/assets/css',
+	jsDest: '/assets/js',
+	maps: '/assets/source/_maps'
+};
+
+MATCH = {
+	php: '/**/*.php',
+	sass: '/**/*.scss',
+	css: '/**/*.css',
+	js: '/**/*.js'
+}
+
+SRC = {
+	sass: [],
+	js: []
+}
+
 /* Confing: Edit saucal.json to set your folders and domain
 ========================================================= */
-FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
+try {
+	FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
+} catch( e ) {
+	FOLDERS = [ '.' ];
+}
 
- // Here are defined relateve paths for source files, dest paths and maps
- // Change them if you know what you are doing or just stick to folder structure convention
- PATHS = {
- 	source: '/assets/source',
-	sass: '/assets/source/sass',
-	css: '/assets/css',
-	jsSource: '/assets/source/js',
-	jsDest: '/assets/js',
-	maps: '../source/_maps'
- };
+Array.prototype.getFiltered = function(type){
+	if( type ) {
+		return this.filter(function( item ){
+			return item.name.substr(0, type.length) === type;
+		});
+	} else {
+		return this;
+	}
+}
+
+Array.prototype.getFlattened = function(prefix) {
+	if( typeof prefix == 'undefined' ) {
+		prefix = '';
+	}
+
+	var paths = [];
+	this.forEach(function(item, i){
+		item.files.forEach(function(item){
+			paths.push( prefix + item.f )
+		});
+	})
+	return paths;
+}
+
+var newFolders = [];
+_.each(FOLDERS, function(item, key){
+	if( typeof item == 'string' ) {
+		item = { folder: item };
+	} else if( typeof item == 'object' ) {
+		if( typeof item.folder == 'string' ) {
+			// do nothing, we have a folder defined
+		} else if( typeof key == 'string' ) {
+			// we're on an object based structure
+			item.folder = key;
+		} else {
+			// We don't have a folder defined, we are editing globals here
+			if( ! _.isUndefined( item.PATHS ) ) {
+				PATHS = _.extend({}, PATHS, item.PATHS);
+			}
+			if( ! _.isUndefined( item.MATCH ) ) {
+				MATCH = _.extend({}, MATCH, item.MATCH);
+			}
+			if( ! _.isUndefined( item.SRC ) ) {
+				SRC = _.extend({}, SRC, item.SRC);
+			}
+			return; // ignore because we have no folder defined
+		}
+	}
+	if( _.isUndefined( item.PATHS ) ) {
+		item.PATHS = {}
+	}
+	item.PATHS = _.extend({}, PATHS, item.PATHS);
+
+	if( _.isUndefined( item.MATCH ) ) {
+		item.MATCH = {}
+	}
+	item.MATCH = _.extend({}, MATCH, item.MATCH);
+
+	if( _.isUndefined( item.SRC ) ) {
+		item.SRC = {}
+	}
+	item.SRC = _.extend({}, SRC, item.SRC);
+
+	if( _.isUndefined( item.concat ) ) {
+		try {
+			item.concat = JSON.parse( fs.readFileSync( item.folder + item.PATHS.source + '/concat.json' ) );
+		} catch( e ) {
+			item.concat = [];
+		}
+	}
+
+	item.concat.forEach(function(concatDest){
+		concatDest.files = concatDest.files.map(function(source){
+			if( typeof source == 'string' ) {
+				source = { f: source };
+			}
+			var prefix = '';
+			if( source.f.substr(0, 1) == '!' ) {
+				prefix = '!';
+				source.f = source.f.substr(1);
+			}
+			source.f = prefix + item.folder + item.PATHS.source + '/' + source.f;
+
+			return source;
+		})
+	})
+
+	newFolders.push( item );
+})
+FOLDERS = newFolders;
 
 // Here are defined default file paths to watch
 // change them if you know what you are doing or just stick to folder structure convention
 WATCH = {
-	php: buildPath( '/**/*.php' ),
-	sass: buildPath( PATHS.sass + '/**/*.scss' ),
-	css: buildPath( PATHS.css + '/**/*.css' ),
-	jsSource: buildPath( PATHS.jsSource + '/**/*.js' ),
-	jsDest: buildPath( PATHS.jsDest + '/**/*.js' )
+	php: buildPath( MATCH.php ),
+	sass: buildPath( PATHS.sass + MATCH.sass ),
+	css: buildPath( PATHS.css + MATCH.css ),
+	jsSource: buildPath( PATHS.jsSource + MATCH.js ),
+	jsDest: buildPath( PATHS.jsDest + MATCH.js )
 };
 
 // helper function - creates watch paths array based on FOLDERS
 function buildPath( path ) {
-	return paths = FOLDERS.map( function( folder ) {
-		return folder + path;
+	return paths = FOLDERS.map( function( folderConfig ) {
+		return folderConfig.folder + path;
 	});
 }
 
 gulp.task( 'zip', function() {
-	var tasks = FOLDERS.map( function( folder ) {
+	var tasks = FOLDERS.map( function( folderConfig ) {
+		var folder = folderConfig.folder;
 		var basename = path.basename(path.resolve(folder));
 		var filename = folder + "/" + basename + ".zip";
 		try {
@@ -71,112 +181,127 @@ gulp.task( 'zip', function() {
 			.pipe( $.size({title: folder + ' zip'}) );
 	});
 	return merge( tasks );
-} )
+} );
+
+function map_destination( folderConfig, dest ) {
+	var assetsPath = folderConfig.folder + folderConfig.PATHS.assets;
+	var destPath = folderConfig.folder + dest;
+	var mapsPath = folderConfig.folder + folderConfig.PATHS.maps;
+	var destRelative = path.relative(assetsPath,destPath);
+
+	var suffix = '';
+	if( destRelative.substr(0,1) != "." && destRelative.substr(0,1) != "/" ) {
+		suffix = '/' + destRelative;
+	}
+
+	return {
+		dest: destPath,
+		maps: path.relative( destPath, mapsPath ) + suffix
+	};
+}
 
 gulp.task( 'sass', function() {
-	var tasks = FOLDERS.map( function( folder ) {
+	var tasks = FOLDERS.map( function( folderConfig ) {
+		var folder = folderConfig.folder;
+		var PATHS = folderConfig.PATHS;
+		var MATCH = folderConfig.MATCH;
+		var SRC = JSON.parse( JSON.stringify( folderConfig.SRC.sass ) );
+		SRC.unshift( folder + PATHS.sass + MATCH.sass )
 
-		return gulp.src( folder + PATHS.sass + '/**/*.scss' )
+		var destination = map_destination(folderConfig, PATHS.css);
+
+		return gulp.src( SRC )
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
 			.pipe( $.sass({ precision: 10 }).on( 'error', $.sass.logError ) )
 			.pipe( ! CONFIG.noprefix ? $.autoprefixer({browsers: [ 'last 5 versions', '> 1%' ]}) : $.util.noop() )
-			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/css' ) : $.util.noop() )
+			.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
 			.pipe( $.cached( 'sass' ) )
-			.pipe( gulp.dest( folder + PATHS.css ) )
+			.pipe( gulp.dest( destination.dest ) )
 			.pipe( $.filter( '**/*.css' ) )
 			.pipe( $.cleanCss() )
 			.pipe( $.rename({suffix: '.min'}) )
-			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/css' ) : $.util.noop() )
+			.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
 			.pipe( $.cached( 'sass' ) )
-			.pipe( gulp.dest( folder + PATHS.css ) )
+			.pipe( gulp.dest( destination.dest ) )
 			.pipe( $.size({title: folder + ' css'}) );
 	});
 	return merge( tasks );
 });
 
-var concatConfig = {};
-
-function get_concat_settings( folder, prefix ) {
-	var filePath = 0 , concatFiles = 0, concatName = 0;
-
-	// read files into the global variable. TODO: Needs polishing
-	concatConfig[folder] = []; 
-	try {
-		concatConfig[folder] = JSON.parse( fs.readFileSync( folder + PATHS.source + '/concat.json' ) );
-	} catch (err) {
-
-	}
-	concatConfig[folder].forEach(function(item){
-		item.files = item.files.map(function(item){
-			return folder + PATHS.source + '/' + item;
-		})
-	})
-
-	concatFiles = JSON.parse( JSON.stringify( concatConfig[folder] ) );
-
-	if( prefix ) {
-		concatFiles = concatFiles.filter(function( item ){
-			return item.name.substr(0, prefix.length) === prefix;
-		});
-	}
-
-	return concatFiles;
-}
-
-function get_concat_ignored( concatFiles ) {
-	var paths = [];
-	concatFiles.forEach(function(item, i){
-		item.files.forEach(function(item){
-			paths.push( '!' + item )
-		});
-	})
-	return paths;
-}
-
 gulp.task( 'js', function() {
-	var tasks = FOLDERS.map( function( folder ) {
+	var tasks = FOLDERS.map( function( folderConfig ) {
+		var folder = folderConfig.folder;
+		var PATHS = folderConfig.PATHS;
+		var MATCH = folderConfig.MATCH;
+		var SRC = JSON.parse( JSON.stringify( folderConfig.SRC.js ) );
+		SRC.unshift(folder + PATHS.jsSource + MATCH.js);
+		
+		var destination = map_destination( folderConfig, PATHS.jsDest );
+		
 		// get concat sources for this particular folder (from the source folder)
-		var concatFiles = get_concat_settings( folder, 'js' );
+		var concatFiles = folderConfig.concat.getFiltered('js');
 		// use the concat sources as ignored paths in the "base" process
-		var includePaths = get_concat_ignored( concatFiles );
-		includePaths.unshift(folder + PATHS.jsSource + '/**/*.js');
+		var includePaths = concatFiles.getFlattened('!');
+		SRC = _.union( SRC, includePaths );
 
 		var folderTasks = [];
 
 		// Do everything not included in the concat
-		var base = gulp.src( includePaths )
+		var base = gulp.src( SRC )
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
-			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
+			.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
 			.pipe( $.cached( 'js' ) )
-			.pipe( gulp.dest( folder + PATHS.jsDest ) )
+			.pipe( gulp.dest( destination.dest ) )
 			.pipe( $.filter( [ '**/*.js', '!**/*.min.js' ] ) )
 			.pipe( $.uglify() )
 			.pipe( $.rename({suffix: '.min'}) )
-			.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
+			.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
 			.pipe( $.cached( 'js' ) )
-			.pipe( gulp.dest( folder + PATHS.jsDest ) )
+			.pipe( gulp.dest( destination.dest ) )
 			.pipe( $.size({title: folder + ' js'}) );
 
 		folderTasks.push(base);
 
 		// Process each concat dest as it's individual file
 		concatFiles.forEach(function(dest) {
-			var thisDest = gulp.src( dest.files )
-				.pipe( $.plumber() )
-				.pipe( $.sourcemaps.init() )
-				.pipe( $.concat( path.basename( dest.name ) ) )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
-				.pipe( $.cached( 'js' ) )
-				.pipe( gulp.dest( folder + PATHS.jsDest ) )
-				.pipe( $.filter( [ '**/*.js' ] ) )
-				.pipe( $.uglify() )
-				.pipe( $.rename({suffix: '.min'}) )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( PATHS.maps + '/js' ) : $.util.noop() )
-				.pipe( $.cached( 'js' ) )
-				.pipe( gulp.dest( folder + PATHS.jsDest ) )
-				.pipe( $.size({title: folder + ' concat ' + dest.name }) );
+			var thisDest;
+
+			if( dest.passthrough ) {
+				var passThroughDest = destination;
+				if( dest.files.length > 1 || dest.files[0].f.indexOf("*") > -1 ) {
+					passThroughDest = map_destination( folderConfig, PATHS.jsDest + '/' + path.basename( dest.name ) );
+				}
+				thisDest = gulp.src( [ dest ].getFlattened() )
+					.pipe( $.plumber() )
+					.pipe( $.cached( 'js' ) )
+					.pipe( gulp.dest( passThroughDest.dest ) )
+					.pipe( $.size({title: folder + ' passthrough ' + dest.name }) );
+			} else {
+				var keepUnminified = _.pluck(_.filter(dest.files, 'keepUnminified'), 'f');
+				keepUnminified = keepUnminified.length ? $.filter( keepUnminified, { restore: true } ) : null;
+				thisDest = gulp.src( [ dest ].getFlattened() )
+					.pipe( $.plumber() )
+					.pipe( $.sourcemaps.init() )
+					.pipe( keepUnminified ? keepUnminified : $.util.noop() )
+					.pipe( keepUnminified && ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( keepUnminified ? $.cached( 'js' ) : $.util.noop() )
+					.pipe( keepUnminified ? gulp.dest( destination.dest ) : $.util.noop() )
+					.pipe( keepUnminified ? keepUnminified.restore : $.util.noop() )
+					.pipe( $.filter( [ '**/*.js' ] ) )
+					.pipe( $.concat( path.basename( dest.name ) ) )
+					.pipe( ! dest.minifiedOnly && ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( ! dest.minifiedOnly ? $.cached( 'js' ) : $.util.noop() )
+					.pipe( ! dest.minifiedOnly ? gulp.dest( destination.dest ) : $.util.noop() )
+					.pipe( $.filter( [ '**/*.js' ] ) )
+					.pipe( $.uglify() )
+					.pipe( $.rename({suffix: '.min'}) )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'js' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.size({title: folder + ' concat ' + dest.name }) );
+			}
 			
 			folderTasks.push( thisDest );
 		})
@@ -210,14 +335,9 @@ if( CONFIG.bs ) {
 
 gulp.task( 'watch', watch_task );
 
-var folderInfo = [];
-
 function set_folderinfo( resolve ) {
-	if( folderInfo.length ) {
-		return resolve( folderInfo );
-	}
-
-	var tasks = FOLDERS.map( function( path, i ) {
+	var tasks = FOLDERS.map( function( folderConfig ) {
+		var path = folderConfig.folder;
 		return gulp
 			.src([path + '/*.php', path + '/*.css'])
 			.pipe($.filter(function(thisPath){
@@ -255,7 +375,7 @@ function set_folderinfo( resolve ) {
 
 				if( data.version ) {
 					data.mainFilePath = thisPath;
-					folderInfo[i] = data;
+					folderConfig.info = data;
 				}
 			}))
 	});
@@ -263,20 +383,20 @@ function set_folderinfo( resolve ) {
 }
 
 var do_translate = function() {
-	var tasks = FOLDERS.map( function( folder, i ) {
-		var path = folderInfo[i].langPath;
+	var tasks = FOLDERS.map( function( folderConfig ) {
+		var path = folderConfig.info.langPath;
 		if( path ) {
 			path += '/';
 		} else {
 			path = 'languages/';
 		}
 		
-		return gulp.src( folder + '/**/*.php' )
+		return gulp.src( folder + MATCH.php )
 			.pipe($.wpPot( {
-				domain: folderInfo[i].text_domain,
+				domain: folderConfig.info.text_domain,
 				headers: false
 			} ))
-			.pipe( gulp.dest( folder + '/' + path + folderInfo[i].text_domain + '.pot' ) )
+			.pipe( gulp.dest( folder + '/' + path + folderConfig.info.text_domain + '.pot' ) )
 			.pipe( $.size({title: folder + ' pot'}) );
 	});
 	return merge( tasks );
@@ -302,11 +422,12 @@ var textDomainFunctions = [ //List keyword specifications
 ];
 
 var do_translate_check = function() {
-	var tasks = FOLDERS.map( function( folder, i ) {
+	var tasks = FOLDERS.map( function( folderConfig ) {
+		var folder = folderConfig.folder;
 		return gulp
-			.src(folder + '/**/*.php')
+			.src(folder + MATCH.php)
 			.pipe($.checktextdomain({
-				text_domain: folderInfo[i].text_domain, //Specify allowed domain(s)
+				text_domain: folderConfig.info.text_domain, //Specify allowed domain(s)
 				keywords: textDomainFunctions,
 			}));
 	});
@@ -335,15 +456,15 @@ async function do_bump() {
 		levelBump = 'patch';
 	}
 	var diff = await getDiffFiles();
-	var tasks = FOLDERS.map( function( folder, i ) {
-		var origVersion = folderInfo[i].version;
+	var tasks = FOLDERS.map( function( folder ) {
+		var origVersion = folderConfig.info.version;
 		var regex = new RegExp('(version:?\\s+)((?:[0-9]+\.?){1,3})', 'gi');
 
 		var gulpSrc;
 
 		if ( typeof $.util.env.allfiles !== 'undefined' ) {
 			var filesToExplore = [ 
-				folder + '/**/*.php', 
+				folder + MATCH.php, 
 				'!**/node_modules/**' // exclude node_modules
 			];
 			gulpSrc = gulp.src( filesToExplore );
@@ -361,11 +482,11 @@ async function do_bump() {
 			diffFilesOnFolder = diffFilesOnFolder.filter(function(cont){
 				return cont ? true : false;
 			});
-			diffFilesOnFolder.unshift(folderInfo[i].mainFilePath)
+			diffFilesOnFolder.unshift(folderConfig.info.mainFilePath)
 			diffFilesOnFolder.push('!**/node_modules/**'); // exclude node_modules
 
 			gulpSrc = gulp.src( diffFilesOnFolder, { base: folder + "/" } )
-				.pipe( $.filter( [ '**/*.php' ] ) )
+				.pipe( $.filter( [ MATCH.php ] ) )
 		}
 
 		return gulpSrc
