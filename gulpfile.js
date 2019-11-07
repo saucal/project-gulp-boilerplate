@@ -213,7 +213,7 @@ gulp.task( 'sass', function() {
 			.pipe( $.plumber() )
 			.pipe( $.sourcemaps.init() )
 			.pipe( $.sass({ precision: 10 }).on( 'error', $.sass.logError ) )
-			.pipe( ! CONFIG.noprefix ? $.autoprefixer({browsers: [ 'last 5 versions', '> 1%' ]}) : $.util.noop() )
+			.pipe( ! CONFIG.noprefix ? $.autoprefixer() : $.util.noop() )
 			.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
 			.pipe( $.cached( 'sass' ) )
 			.pipe( gulp.dest( destination.dest ) )
