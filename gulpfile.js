@@ -5,7 +5,6 @@ merge = require( 'merge-stream' );
 fs = require( 'fs' );
 path = require( 'path' );
 semver = require( 'semver' );
-nodegit = require( 'nodegit' );
 _ = require( 'underscore' );
 $ = require( 'gulp-load-plugins' )({pattern: '*'});
 
@@ -528,6 +527,7 @@ if ( CONFIG.watch ) {
 }
 
 async function getDiffFiles() {
+	nodegit = require( 'nodegit' );
 	var repository = await nodegit.Repository.open('.');
 	var currCommit = await repository.getHeadCommit();
 	var mastCommit = await repository.getMasterCommit();
