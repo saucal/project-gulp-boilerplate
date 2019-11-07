@@ -19,12 +19,12 @@ CONFIG = {
 // Change them if you know what you are doing or just stick to folder structure convention
 PATHS = {
 	assets: '/assets',
-	source: '/assets/source',
-	sass: '/assets/source/sass',
-	jsSource: '/assets/source/js',
-	css: '/assets/css',
-	jsDest: '/assets/js',
-	maps: '/assets/source/_maps'
+	source: '{self.assets}/source',
+	sass: '{self.assets}/source/sass',
+	jsSource: '{self.assets}/source/js',
+	css: '{self.assets}/css',
+	jsDest: '{self.assets}/js',
+	maps: '{self.assets}/source/_maps'
 };
 
 MATCH = {
@@ -99,6 +99,12 @@ _.each(FOLDERS, function(item, key){
 		item.PATHS = {}
 	}
 	item.PATHS = _.extend({}, PATHS, item.PATHS);
+	_.each(item.PATHS, function(val, key, self){
+		var newPath = val.replace(/\{self\.(.*?)\}/g, function(match, g1){
+			return self[g1];
+		})
+		self[key] = newPath;
+	})
 
 	if( _.isUndefined( item.MATCH ) ) {
 		item.MATCH = {}
@@ -278,27 +284,30 @@ gulp.task( 'js', function() {
 					.pipe( gulp.dest( passThroughDest.dest ) )
 					.pipe( $.size({title: folder + ' passthrough ' + dest.name }) );
 			} else {
+				var thisDestPath = path.join( folderConfig.PATHS.assets, path.dirname( dest.name ) );
+				var thisDestination = map_destination( folderConfig, thisDestPath );
+
 				var keepUnminified = _.pluck(_.filter(dest.files, 'keepUnminified'), 'f');
 				keepUnminified = keepUnminified.length ? $.filter( keepUnminified, { restore: true } ) : null;
 				thisDest = gulp.src( [ dest ].getFlattened() )
 					.pipe( $.plumber() )
 					.pipe( $.sourcemaps.init() )
 					.pipe( keepUnminified ? keepUnminified : $.util.noop() )
-					.pipe( keepUnminified && ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( keepUnminified && ! CONFIG.production ? $.sourcemaps.write( thisDestination.maps ) : $.util.noop() )
 					.pipe( keepUnminified ? $.cached( 'js' ) : $.util.noop() )
-					.pipe( keepUnminified ? gulp.dest( destination.dest ) : $.util.noop() )
+					.pipe( keepUnminified ? gulp.dest( thisDestination.dest ) : $.util.noop() )
 					.pipe( keepUnminified ? keepUnminified.restore : $.util.noop() )
 					.pipe( $.filter( [ '**/*.js' ] ) )
 					.pipe( $.concat( path.basename( dest.name ) ) )
-					.pipe( ! dest.minifiedOnly && ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( ! dest.minifiedOnly && ! CONFIG.production ? $.sourcemaps.write( thisDestination.maps ) : $.util.noop() )
 					.pipe( ! dest.minifiedOnly ? $.cached( 'js' ) : $.util.noop() )
-					.pipe( ! dest.minifiedOnly ? gulp.dest( destination.dest ) : $.util.noop() )
+					.pipe( ! dest.minifiedOnly ? gulp.dest( thisDestination.dest ) : $.util.noop() )
 					.pipe( $.filter( [ '**/*.js' ] ) )
 					.pipe( $.uglify() )
 					.pipe( $.rename({suffix: '.min'}) )
-					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( thisDestination.maps ) : $.util.noop() )
 					.pipe( $.cached( 'js' ) )
-					.pipe( gulp.dest( destination.dest ) )
+					.pipe( gulp.dest( thisDestination.dest ) )
 					.pipe( $.size({title: folder + ' concat ' + dest.name }) );
 			}
 			
