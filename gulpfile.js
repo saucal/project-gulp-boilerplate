@@ -330,9 +330,13 @@ gulp.task( 'browser-sync', function(done) {
     return done();
 });
 
-var doWatch = function(done) {
-    gulp.watch( WATCH.sass, gulp.parallel( 'sass' ) );
-    gulp.watch( WATCH.jsSource, gulp.parallel( 'js' ) );
+var doWatch = function (done) {
+	FOLDERS.map(
+		function (folderConfig) {
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) )
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) )
+		}
+	)
 }
 var watch_task;
 if( CONFIG.bs ) {
