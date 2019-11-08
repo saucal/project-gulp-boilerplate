@@ -1,4 +1,4 @@
-var $, _, gulp, merge, fs, path, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, WATCH;
+var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC, WATCH;
 
 gulp   = require( 'gulp' );
 merge  = require( 'merge-stream' );
@@ -32,12 +32,12 @@ MATCH = {
 	sass: '**/*.scss',
 	css: '**/*.css',
 	js: '**/*.js'
-}
+};
 
 SRC = {
 	sass: [],
 	js: []
-}
+};
 
 /* Confing: Edit saucal.json to set your folders and domain
 ========================================================= */
@@ -57,7 +57,7 @@ Array.prototype.getFiltered = function(type){
 	} else {
 		return this;
 	}
-}
+};
 
 Array.prototype.getFlattened = function(prefix) {
 	if ( typeof prefix == 'undefined' ) {
@@ -69,13 +69,13 @@ Array.prototype.getFlattened = function(prefix) {
 		function(item, i){
 			item.files.forEach(
 				function(item){
-					paths.push( prefix + item.f )
+					paths.push( prefix + item.f );
 				}
 			);
 		}
-	)
+	);
 	return paths;
-}
+};
 
 var newFolders = [];
 _.each(
@@ -104,7 +104,7 @@ _.each(
 			}
 		}
 		if ( _.isUndefined( item.PATHS ) ) {
-			item.PATHS = {}
+			item.PATHS = {};
 		}
 		item.PATHS = _.extend( {}, PATHS, item.PATHS );
 		_.each(
@@ -115,18 +115,18 @@ _.each(
 					function(match, g1){
 						return self[g1];
 					}
-				)
+				);
 				self[key]   = newPath;
 			}
-		)
+		);
 
 		if ( _.isUndefined( item.MATCH ) ) {
-			item.MATCH = {}
+			item.MATCH = {};
 		}
 		item.MATCH = _.extend( {}, MATCH, item.MATCH );
 
 		if ( _.isUndefined( item.SRC ) ) {
-			item.SRC = {}
+			item.SRC = {};
 		}
 		item.SRC = _.extend( {}, SRC, item.SRC );
 
@@ -154,14 +154,14 @@ _.each(
 
 						return source;
 					}
-				)
+				);
 			}
-		)
+		);
 
 		newFolders.push( item );
 	}
-)
-FOLDERS        = newFolders;
+);
+FOLDERS = newFolders;
 
 // Here are defined default file paths to watch
 // change them if you know what you are doing or just stick to folder structure convention
@@ -175,9 +175,9 @@ WATCH = {
 
 // helper function - creates watch paths array based on FOLDERS
 function buildPath( thisPath ) {
-	return paths = FOLDERS.map(
+	return FOLDERS.map(
 		function( folderConfig ) {
-				return path.join( folderConfig.folder, thisPath );
+			return path.join( folderConfig.folder, thisPath );
 		}
 	);
 }
@@ -189,7 +189,7 @@ gulp.task(
 			function( folderConfig ) {
 				var folder   = folderConfig.folder;
 				var basename = path.basename( path.resolve( folder ) );
-				var filename = path.join( folder, basename + ".zip" );
+				var filename = path.join( folder, basename + '.zip' );
 				try {
 					fs.unlinkSync( filename );
 				} catch ( e ) {
@@ -197,20 +197,20 @@ gulp.task(
 				}
 				return gulp.src(
 					[
-					folder + '/**/*',
-					'!**/node_modules/**',
-					'!**/gulpfile.js',
-					'!**/.DS_Store',
-					'!**/package.json',
-					'!**/package-lock.json',
-					'!**/.git/**'
+						folder + '/**/*',
+						'!**/node_modules/**',
+						'!**/gulpfile.js',
+						'!**/.DS_Store',
+						'!**/package.json',
+						'!**/package-lock.json',
+						'!**/.git/**'
 					],
 					{
 						base: path.join( folder, '..' ),
 					}
 				)
-				.pipe( $.vinylZip.dest( filename ) )
-				.pipe( $.size( {title: folder + ' zip'} ) );
+					.pipe( $.vinylZip.dest( filename ) )
+					.pipe( $.size( {title: folder + ' zip'} ) );
 			}
 		);
 		return merge( tasks );
@@ -224,7 +224,7 @@ function map_destination( folderConfig, dest ) {
 	var destRelative = path.relative( assetsPath,destPath );
 
 	var suffix = '';
-	if ( destRelative.substr( 0,1 ) != "." && destRelative.substr( 0,1 ) != "/" ) {
+	if ( destRelative.substr( 0,1 ) != '.' && destRelative.substr( 0,1 ) != '/' ) {
 		suffix = '/' + destRelative;
 	}
 
@@ -243,25 +243,25 @@ gulp.task(
 				var PATHS  = folderConfig.PATHS;
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.sass ) );
-				SRC.unshift( path.join( folder, PATHS.sass, MATCH.sass ) )
+				SRC.unshift( path.join( folder, PATHS.sass, MATCH.sass ) );
 
 				var destination = map_destination( folderConfig, PATHS.css );
 
 				return gulp.src( SRC )
-				.pipe( $.plumber() )
-				.pipe( $.sourcemaps.init() )
-				.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
-				.pipe( ! CONFIG.noprefix ? $.autoprefixer() : $.util.noop() )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'sass' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.filter( '**/*.css' ) )
-				.pipe( $.cleanCss() )
-				.pipe( $.rename( {suffix: '.min'} ) )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'sass' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.size( {title: folder + ' css'} ) );
+					.pipe( $.plumber() )
+					.pipe( $.sourcemaps.init() )
+					.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
+					.pipe( ! CONFIG.noprefix ? $.autoprefixer() : $.util.noop() )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'sass' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.filter( '**/*.css' ) )
+					.pipe( $.cleanCss() )
+					.pipe( $.rename( {suffix: '.min'} ) )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'sass' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.size( {title: folder + ' css'} ) );
 			}
 		);
 		return merge( tasks );
@@ -291,18 +291,18 @@ gulp.task(
 
 				// Do everything not included in the concat
 				var base = gulp.src( SRC )
-				.pipe( $.plumber() )
-				.pipe( $.sourcemaps.init() )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'js' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.filter( [ '**/*.js', '!**/*.min.js' ] ) )
-				.pipe( $.uglify() )
-				.pipe( $.rename( {suffix: '.min'} ) )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'js' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.size( {title: folder + ' js'} ) );
+					.pipe( $.plumber() )
+					.pipe( $.sourcemaps.init() )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'js' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.filter( [ '**/*.js', '!**/*.min.js' ] ) )
+					.pipe( $.uglify() )
+					.pipe( $.rename( {suffix: '.min'} ) )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'js' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.size( {title: folder + ' js'} ) );
 
 				folderTasks.push( base );
 
@@ -313,7 +313,7 @@ gulp.task(
 
 						if ( dest.passthrough ) {
 							var passThroughDest = destination;
-							if ( dest.files.length > 1 || dest.files[0].f.indexOf( "*" ) > -1 ) {
+							if ( dest.files.length > 1 || dest.files[0].f.indexOf( '*' ) > -1 ) {
 								passThroughDest = map_destination( folderConfig, PATHS.jsDest + '/' + path.basename( dest.name ) );
 							}
 							thisDest = gulp.src( [ dest ].getFlattened() )
@@ -351,7 +351,7 @@ gulp.task(
 
 						folderTasks.push( thisDest );
 					}
-				)
+				);
 
 				return merge( folderTasks );
 			}
@@ -377,11 +377,11 @@ gulp.task(
 var doWatch = function (done) {
 	FOLDERS.map(
 		function (folderConfig) {
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) )
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) )
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) );
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) );
 		}
-	)
-}
+	);
+};
 var watch_task;
 if ( CONFIG.bs ) {
 	watch_task = gulp.series( 'browser-sync', doWatch );
@@ -394,16 +394,16 @@ gulp.task( 'watch', watch_task );
 function set_folderinfo( resolve ) {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder = folderConfig.folder;
-				return gulp
+			var folder = folderConfig.folder;
+			return gulp
 				.src( [ path.join( folder, '*.php' ), path.join( folder, '*.css' ) ] )
 				.pipe(
 					$.filter(
-						function(thisPath){
-							var thisPath = path.join( folder, thisPath.relative );
+						function(_thisPath){
+							var thisPath = path.join( folder, _thisPath.relative );
 							var phpFile  = fs.readFileSync( thisPath );
 
-							const regex = /^(?:\s+\*\s+)?(.+?)\:\s+(.+)$/gm;
+							const regex = /^(?:\s+\*\s+)?(.+?):\s+(.+)$/gm;
 							let m;
 
 							var data = {
@@ -411,7 +411,7 @@ function set_folderinfo( resolve ) {
 								text_domain: '',
 								langPath: '',
 								version: '',
-							}
+							};
 
 							while ((m = regex.exec( phpFile )) !== null) {
 								// This is necessary to avoid infinite loops with zero-width matches
@@ -438,7 +438,7 @@ function set_folderinfo( resolve ) {
 							}
 						}
 					)
-				)
+				);
 		}
 	);
 	return merge( tasks );
@@ -447,17 +447,17 @@ function set_folderinfo( resolve ) {
 var do_translate = function() {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder   = folderConfig.folder;
-				var langPath = folderConfig.info.langPath;
-				var PATHS    = folderConfig.PATHS;
-				var MATCH    = folderConfig.MATCH;
+			var folder   = folderConfig.folder;
+			var langPath = folderConfig.info.langPath;
+			var PATHS    = folderConfig.PATHS;
+			var MATCH    = folderConfig.MATCH;
 			if ( langPath ) {
 				langPath += '/';
 			} else {
 				langPath = 'languages/';
 			}
 
-				return gulp.src( path.join( folder, MATCH.php ) )
+			return gulp.src( path.join( folder, MATCH.php ) )
 				.pipe(
 					$.wpPot(
 						{
@@ -471,7 +471,7 @@ var do_translate = function() {
 		}
 	);
 	return merge( tasks );
-}
+};
 
 gulp.task( 'translate', gulp.series( set_folderinfo, do_translate ) );
 
@@ -495,10 +495,10 @@ var textDomainFunctions = [ //List keyword specifications
 var do_translate_check = function() {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder = folderConfig.folder;
-				var PATHS  = folderConfig.PATHS;
-				var MATCH  = folderConfig.MATCH;
-				return gulp
+			var folder = folderConfig.folder;
+			var PATHS  = folderConfig.PATHS;
+			var MATCH  = folderConfig.MATCH;
+			return gulp
 				.src( path.join( folder, MATCH.php ) )
 				.pipe(
 					$.checktextdomain(
@@ -511,7 +511,7 @@ var do_translate_check = function() {
 		}
 	);
 	return merge( tasks );
-}
+};
 
 async function do_bump() {
 	var versionBump = false;
@@ -537,13 +537,13 @@ async function do_bump() {
 	var diff  = await getDiffFiles();
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder      = folderConfig.folder;
-				var PATHS       = folderConfig.PATHS;
-				var MATCH       = folderConfig.MATCH;
-				var origVersion = folderConfig.info.version;
-				var regex       = new RegExp( '(version:?\\s+)((?:[0-9]+\.?){1,3})', 'gi' );
+			var folder      = folderConfig.folder;
+			var PATHS       = folderConfig.PATHS;
+			var MATCH       = folderConfig.MATCH;
+			var origVersion = folderConfig.info.version;
+			var regex       = new RegExp( '(version:?\\s+)((?:[0-9]+\\.?){1,3})', 'gi' );
 
-				var gulpSrc;
+			var gulpSrc;
 
 			if ( typeof $.util.env.allfiles !== 'undefined' ) {
 				var filesToExplore = [
@@ -560,7 +560,7 @@ async function do_bump() {
 						if ( ! withinDir ) {
 							return false;
 						} else {
-							return path.join( folder, resolvedPath.substr( realPath.length ).replace( new RegExp( '\\' + path.sep, 'g' ), "/" ) );
+							return path.join( folder, resolvedPath.substr( realPath.length ).replace( new RegExp( '\\' + path.sep, 'g' ), '/' ) );
 						}
 					}
 				);
@@ -569,14 +569,14 @@ async function do_bump() {
 						return cont ? true : false;
 					}
 				);
-				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath )
+				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath );
 				diffFilesOnFolder.push( '!**/node_modules/**' ); // exclude node_modules
 
-				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, "/" ) } )
-					.pipe( $.filter( [ MATCH.php ] ) )
+				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, '/' ) } )
+					.pipe( $.filter( [ MATCH.php ] ) );
 			}
 
-				return gulpSrc
+			return gulpSrc
 				.pipe(
 					$.replace(
 						regex,
@@ -591,7 +591,7 @@ async function do_bump() {
 						}
 					)
 				)
-				.pipe( gulp.dest( folder ) )
+				.pipe( gulp.dest( folder ) );
 		}
 	);
 	return merge( tasks );
@@ -629,11 +629,11 @@ async function getDiffFiles() {
 			if ( diffFile.isDeleted() ) {
 				return false;
 			}
-			return "./" + diffFile.newFile().path();
+			return './' + diffFile.newFile().path();
 		}
 	).filter(
 		function(cont){
-				return cont ? true : false;
+			return cont ? true : false;
 		}
 	);
 	return diff;
