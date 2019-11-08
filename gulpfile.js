@@ -189,7 +189,7 @@ gulp.task(
 			function( folderConfig ) {
 				var folder   = folderConfig.folder;
 				var basename = path.basename( path.resolve( folder ) );
-				var filename = path.join( folder, basename + ".zip" );
+				var filename = path.join( folder, basename + '.zip' );
 				try {
 					fs.unlinkSync( filename );
 				} catch ( e ) {
@@ -224,7 +224,7 @@ function map_destination( folderConfig, dest ) {
 	var destRelative = path.relative( assetsPath,destPath );
 
 	var suffix = '';
-	if ( destRelative.substr( 0,1 ) != "." && destRelative.substr( 0,1 ) != "/" ) {
+	if ( destRelative.substr( 0,1 ) != '.' && destRelative.substr( 0,1 ) != '/' ) {
 		suffix = '/' + destRelative;
 	}
 
@@ -313,7 +313,7 @@ gulp.task(
 
 						if ( dest.passthrough ) {
 							var passThroughDest = destination;
-							if ( dest.files.length > 1 || dest.files[0].f.indexOf( "*" ) > -1 ) {
+							if ( dest.files.length > 1 || dest.files[0].f.indexOf( '*' ) > -1 ) {
 								passThroughDest = map_destination( folderConfig, PATHS.jsDest + '/' + path.basename( dest.name ) );
 							}
 							thisDest = gulp.src( [ dest ].getFlattened() )
@@ -560,7 +560,7 @@ async function do_bump() {
 						if ( ! withinDir ) {
 							return false;
 						} else {
-							return path.join( folder, resolvedPath.substr( realPath.length ).replace( new RegExp( '\\' + path.sep, 'g' ), "/" ) );
+							return path.join( folder, resolvedPath.substr( realPath.length ).replace( new RegExp( '\\' + path.sep, 'g' ), '/' ) );
 						}
 					}
 				);
@@ -572,7 +572,7 @@ async function do_bump() {
 				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath );
 				diffFilesOnFolder.push( '!**/node_modules/**' ); // exclude node_modules
 
-				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, "/" ) } )
+				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, '/' ) } )
 					.pipe( $.filter( [ MATCH.php ] ) );
 			}
 
@@ -629,7 +629,7 @@ async function getDiffFiles() {
 			if ( diffFile.isDeleted() ) {
 				return false;
 			}
-			return "./" + diffFile.newFile().path();
+			return './' + diffFile.newFile().path();
 		}
 	).filter(
 		function(cont){
