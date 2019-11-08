@@ -161,7 +161,7 @@ _.each(
 		newFolders.push( item );
 	}
 );
-FOLDERS        = newFolders;
+FOLDERS = newFolders;
 
 // Here are defined default file paths to watch
 // change them if you know what you are doing or just stick to folder structure convention
@@ -177,7 +177,7 @@ WATCH = {
 function buildPath( thisPath ) {
 	return paths = FOLDERS.map(
 		function( folderConfig ) {
-				return path.join( folderConfig.folder, thisPath );
+			return path.join( folderConfig.folder, thisPath );
 		}
 	);
 }
@@ -197,20 +197,20 @@ gulp.task(
 				}
 				return gulp.src(
 					[
-					folder + '/**/*',
-					'!**/node_modules/**',
-					'!**/gulpfile.js',
-					'!**/.DS_Store',
-					'!**/package.json',
-					'!**/package-lock.json',
-					'!**/.git/**'
+						folder + '/**/*',
+						'!**/node_modules/**',
+						'!**/gulpfile.js',
+						'!**/.DS_Store',
+						'!**/package.json',
+						'!**/package-lock.json',
+						'!**/.git/**'
 					],
 					{
 						base: path.join( folder, '..' ),
 					}
 				)
-				.pipe( $.vinylZip.dest( filename ) )
-				.pipe( $.size( {title: folder + ' zip'} ) );
+					.pipe( $.vinylZip.dest( filename ) )
+					.pipe( $.size( {title: folder + ' zip'} ) );
 			}
 		);
 		return merge( tasks );
@@ -248,20 +248,20 @@ gulp.task(
 				var destination = map_destination( folderConfig, PATHS.css );
 
 				return gulp.src( SRC )
-				.pipe( $.plumber() )
-				.pipe( $.sourcemaps.init() )
-				.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
-				.pipe( ! CONFIG.noprefix ? $.autoprefixer() : $.util.noop() )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'sass' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.filter( '**/*.css' ) )
-				.pipe( $.cleanCss() )
-				.pipe( $.rename( {suffix: '.min'} ) )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'sass' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.size( {title: folder + ' css'} ) );
+					.pipe( $.plumber() )
+					.pipe( $.sourcemaps.init() )
+					.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
+					.pipe( ! CONFIG.noprefix ? $.autoprefixer() : $.util.noop() )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'sass' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.filter( '**/*.css' ) )
+					.pipe( $.cleanCss() )
+					.pipe( $.rename( {suffix: '.min'} ) )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'sass' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.size( {title: folder + ' css'} ) );
 			}
 		);
 		return merge( tasks );
@@ -291,18 +291,18 @@ gulp.task(
 
 				// Do everything not included in the concat
 				var base = gulp.src( SRC )
-				.pipe( $.plumber() )
-				.pipe( $.sourcemaps.init() )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'js' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.filter( [ '**/*.js', '!**/*.min.js' ] ) )
-				.pipe( $.uglify() )
-				.pipe( $.rename( {suffix: '.min'} ) )
-				.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-				.pipe( $.cached( 'js' ) )
-				.pipe( gulp.dest( destination.dest ) )
-				.pipe( $.size( {title: folder + ' js'} ) );
+					.pipe( $.plumber() )
+					.pipe( $.sourcemaps.init() )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'js' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.filter( [ '**/*.js', '!**/*.min.js' ] ) )
+					.pipe( $.uglify() )
+					.pipe( $.rename( {suffix: '.min'} ) )
+					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
+					.pipe( $.cached( 'js' ) )
+					.pipe( gulp.dest( destination.dest ) )
+					.pipe( $.size( {title: folder + ' js'} ) );
 
 				folderTasks.push( base );
 
@@ -394,8 +394,8 @@ gulp.task( 'watch', watch_task );
 function set_folderinfo( resolve ) {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder = folderConfig.folder;
-				return gulp
+			var folder = folderConfig.folder;
+			return gulp
 				.src( [ path.join( folder, '*.php' ), path.join( folder, '*.css' ) ] )
 				.pipe(
 					$.filter(
@@ -447,17 +447,17 @@ function set_folderinfo( resolve ) {
 var do_translate = function() {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder   = folderConfig.folder;
-				var langPath = folderConfig.info.langPath;
-				var PATHS    = folderConfig.PATHS;
-				var MATCH    = folderConfig.MATCH;
+			var folder   = folderConfig.folder;
+			var langPath = folderConfig.info.langPath;
+			var PATHS    = folderConfig.PATHS;
+			var MATCH    = folderConfig.MATCH;
 			if ( langPath ) {
 				langPath += '/';
 			} else {
 				langPath = 'languages/';
 			}
 
-				return gulp.src( path.join( folder, MATCH.php ) )
+			return gulp.src( path.join( folder, MATCH.php ) )
 				.pipe(
 					$.wpPot(
 						{
@@ -495,10 +495,10 @@ var textDomainFunctions = [ //List keyword specifications
 var do_translate_check = function() {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder = folderConfig.folder;
-				var PATHS  = folderConfig.PATHS;
-				var MATCH  = folderConfig.MATCH;
-				return gulp
+			var folder = folderConfig.folder;
+			var PATHS  = folderConfig.PATHS;
+			var MATCH  = folderConfig.MATCH;
+			return gulp
 				.src( path.join( folder, MATCH.php ) )
 				.pipe(
 					$.checktextdomain(
@@ -537,13 +537,13 @@ async function do_bump() {
 	var diff  = await getDiffFiles();
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
-				var folder      = folderConfig.folder;
-				var PATHS       = folderConfig.PATHS;
-				var MATCH       = folderConfig.MATCH;
-				var origVersion = folderConfig.info.version;
-				var regex       = new RegExp( '(version:?\\s+)((?:[0-9]+\.?){1,3})', 'gi' );
+			var folder      = folderConfig.folder;
+			var PATHS       = folderConfig.PATHS;
+			var MATCH       = folderConfig.MATCH;
+			var origVersion = folderConfig.info.version;
+			var regex       = new RegExp( '(version:?\\s+)((?:[0-9]+\.?){1,3})', 'gi' );
 
-				var gulpSrc;
+			var gulpSrc;
 
 			if ( typeof $.util.env.allfiles !== 'undefined' ) {
 				var filesToExplore = [
@@ -576,7 +576,7 @@ async function do_bump() {
 					.pipe( $.filter( [ MATCH.php ] ) );
 			}
 
-				return gulpSrc
+			return gulpSrc
 				.pipe(
 					$.replace(
 						regex,
@@ -633,7 +633,7 @@ async function getDiffFiles() {
 		}
 	).filter(
 		function(cont){
-				return cont ? true : false;
+			return cont ? true : false;
 		}
 	);
 	return diff;
