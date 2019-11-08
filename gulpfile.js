@@ -175,7 +175,7 @@ WATCH = {
 
 // helper function - creates watch paths array based on FOLDERS
 function buildPath( thisPath ) {
-	return paths = FOLDERS.map(
+	return FOLDERS.map(
 		function( folderConfig ) {
 			return path.join( folderConfig.folder, thisPath );
 		}
@@ -399,8 +399,8 @@ function set_folderinfo( resolve ) {
 				.src( [ path.join( folder, '*.php' ), path.join( folder, '*.css' ) ] )
 				.pipe(
 					$.filter(
-						function(thisPath){
-							var thisPath = path.join( folder, thisPath.relative );
+						function(_thisPath){
+							var thisPath = path.join( folder, _thisPath.relative );
 							var phpFile  = fs.readFileSync( thisPath );
 
 							const regex = /^(?:\s+\*\s+)?(.+?):\s+(.+)$/gm;
