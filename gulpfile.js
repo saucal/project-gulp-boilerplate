@@ -403,7 +403,7 @@ function set_folderinfo( resolve ) {
 							var thisPath = path.join( folder, thisPath.relative );
 							var phpFile  = fs.readFileSync( thisPath );
 
-							const regex = /^(?:\s+\*\s+)?(.+?)\:\s+(.+)$/gm;
+							const regex = /^(?:\s+\*\s+)?(.+?):\s+(.+)$/gm;
 							let m;
 
 							var data = {
@@ -541,7 +541,7 @@ async function do_bump() {
 			var PATHS       = folderConfig.PATHS;
 			var MATCH       = folderConfig.MATCH;
 			var origVersion = folderConfig.info.version;
-			var regex       = new RegExp( '(version:?\\s+)((?:[0-9]+\.?){1,3})', 'gi' );
+			var regex       = new RegExp( '(version:?\\s+)((?:[0-9]+\\.?){1,3})', 'gi' );
 
 			var gulpSrc;
 
