@@ -224,8 +224,8 @@ function map_destination( folderConfig, dest ) {
 	var destRelative = path.relative( assetsPath,destPath );
 
 	var suffix = '';
-	if ( destRelative.substr( 0,1 ) != '.' && destRelative.substr( 0,1 ) != '/' ) {
-		suffix = '/' + destRelative;
+	if ( destRelative.substr( 0,1 ) != '.' && destRelative.substr( 0,1 ) != path.sep ) {
+		suffix = path.sep + destRelative;
 	}
 
 	return {
@@ -314,7 +314,7 @@ gulp.task(
 						if ( dest.passthrough ) {
 							var passThroughDest = destination;
 							if ( dest.files.length > 1 || dest.files[0].f.indexOf( '*' ) > -1 ) {
-								passThroughDest = map_destination( folderConfig, PATHS.jsDest + '/' + path.basename( dest.name ) );
+								passThroughDest = map_destination( folderConfig, path.join( PATHS.jsDest, path.basename( dest.name ) ) );
 							}
 							thisDest = gulp.src( [ dest ].getFlattened() )
 								.pipe( $.plumber() )
@@ -572,7 +572,7 @@ async function do_bump() {
 				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath );
 				diffFilesOnFolder.push( '!**/node_modules/**' ); // exclude node_modules
 
-				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, '/' ) } )
+				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, path.sep ) } )
 					.pipe( $.filter( [ MATCH.php ] ) );
 			}
 
@@ -629,7 +629,7 @@ async function getDiffFiles() {
 			if ( diffFile.isDeleted() ) {
 				return false;
 			}
-			return './' + diffFile.newFile().path();
+			return '.' + path.sep + diffFile.newFile().path();
 		}
 	).filter(
 		function(cont){
