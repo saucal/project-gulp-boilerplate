@@ -32,12 +32,12 @@ MATCH = {
 	sass: '**/*.scss',
 	css: '**/*.css',
 	js: '**/*.js'
-}
+};
 
 SRC = {
 	sass: [],
 	js: []
-}
+};
 
 /* Confing: Edit saucal.json to set your folders and domain
 ========================================================= */
@@ -57,7 +57,7 @@ Array.prototype.getFiltered = function(type){
 	} else {
 		return this;
 	}
-}
+};
 
 Array.prototype.getFlattened = function(prefix) {
 	if ( typeof prefix == 'undefined' ) {
@@ -69,13 +69,13 @@ Array.prototype.getFlattened = function(prefix) {
 		function(item, i){
 			item.files.forEach(
 				function(item){
-					paths.push( prefix + item.f )
+					paths.push( prefix + item.f );
 				}
 			);
 		}
-	)
+	);
 	return paths;
-}
+};
 
 var newFolders = [];
 _.each(
@@ -104,7 +104,7 @@ _.each(
 			}
 		}
 		if ( _.isUndefined( item.PATHS ) ) {
-			item.PATHS = {}
+			item.PATHS = {};
 		}
 		item.PATHS = _.extend( {}, PATHS, item.PATHS );
 		_.each(
@@ -115,18 +115,18 @@ _.each(
 					function(match, g1){
 						return self[g1];
 					}
-				)
+				);
 				self[key]   = newPath;
 			}
-		)
+		);
 
 		if ( _.isUndefined( item.MATCH ) ) {
-			item.MATCH = {}
+			item.MATCH = {};
 		}
 		item.MATCH = _.extend( {}, MATCH, item.MATCH );
 
 		if ( _.isUndefined( item.SRC ) ) {
-			item.SRC = {}
+			item.SRC = {};
 		}
 		item.SRC = _.extend( {}, SRC, item.SRC );
 
@@ -154,13 +154,13 @@ _.each(
 
 						return source;
 					}
-				)
+				);
 			}
-		)
+		);
 
 		newFolders.push( item );
 	}
-)
+);
 FOLDERS        = newFolders;
 
 // Here are defined default file paths to watch
@@ -243,7 +243,7 @@ gulp.task(
 				var PATHS  = folderConfig.PATHS;
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.sass ) );
-				SRC.unshift( path.join( folder, PATHS.sass, MATCH.sass ) )
+				SRC.unshift( path.join( folder, PATHS.sass, MATCH.sass ) );
 
 				var destination = map_destination( folderConfig, PATHS.css );
 
@@ -351,7 +351,7 @@ gulp.task(
 
 						folderTasks.push( thisDest );
 					}
-				)
+				);
 
 				return merge( folderTasks );
 			}
@@ -377,11 +377,11 @@ gulp.task(
 var doWatch = function (done) {
 	FOLDERS.map(
 		function (folderConfig) {
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) )
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) )
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) );
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) );
 		}
-	)
-}
+	);
+};
 var watch_task;
 if ( CONFIG.bs ) {
 	watch_task = gulp.series( 'browser-sync', doWatch );
@@ -411,7 +411,7 @@ function set_folderinfo( resolve ) {
 								text_domain: '',
 								langPath: '',
 								version: '',
-							}
+							};
 
 							while ((m = regex.exec( phpFile )) !== null) {
 								// This is necessary to avoid infinite loops with zero-width matches
@@ -438,7 +438,7 @@ function set_folderinfo( resolve ) {
 							}
 						}
 					)
-				)
+				);
 		}
 	);
 	return merge( tasks );
@@ -471,7 +471,7 @@ var do_translate = function() {
 		}
 	);
 	return merge( tasks );
-}
+};
 
 gulp.task( 'translate', gulp.series( set_folderinfo, do_translate ) );
 
@@ -511,7 +511,7 @@ var do_translate_check = function() {
 		}
 	);
 	return merge( tasks );
-}
+};
 
 async function do_bump() {
 	var versionBump = false;
@@ -569,11 +569,11 @@ async function do_bump() {
 						return cont ? true : false;
 					}
 				);
-				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath )
+				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath );
 				diffFilesOnFolder.push( '!**/node_modules/**' ); // exclude node_modules
 
 				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, "/" ) } )
-					.pipe( $.filter( [ MATCH.php ] ) )
+					.pipe( $.filter( [ MATCH.php ] ) );
 			}
 
 				return gulpSrc
@@ -591,7 +591,7 @@ async function do_bump() {
 						}
 					)
 				)
-				.pipe( gulp.dest( folder ) )
+				.pipe( gulp.dest( folder ) );
 		}
 	);
 	return merge( tasks );
