@@ -1,4 +1,4 @@
-var $, _, gulp, merge, fs, path, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, WATCH;
+var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC, WATCH;
 
 gulp   = require( 'gulp' );
 merge  = require( 'merge-stream' );
