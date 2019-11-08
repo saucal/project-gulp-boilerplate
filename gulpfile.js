@@ -243,11 +243,12 @@ gulp.task(
 				var PATHS  = folderConfig.PATHS;
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.sass ) );
-				SRC.unshift( path.join( folder, PATHS.sass, MATCH.sass ) );
+				var baseSRC = path.join( folder, PATHS.sass );
+				SRC.unshift( path.join( baseSRC, MATCH.sass ) );
 
 				var destination = map_destination( folderConfig, PATHS.css );
 
-				return gulp.src( SRC )
+				return gulp.src( SRC, { base: baseSRC } )
 					.pipe( $.plumber() )
 					.pipe( $.sourcemaps.init() )
 					.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
@@ -277,7 +278,8 @@ gulp.task(
 				var PATHS  = folderConfig.PATHS;
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.js ) );
-				SRC.unshift( path.join( folder, PATHS.jsSource, MATCH.js ) );
+				var baseSRC = path.join( folder, PATHS.jsSource );
+				SRC.unshift( path.join( baseSRC, MATCH.js ) );
 
 				var destination = map_destination( folderConfig, PATHS.jsDest );
 
@@ -290,7 +292,7 @@ gulp.task(
 				var folderTasks = [];
 
 				// Do everything not included in the concat
-				var base = gulp.src( SRC )
+				var base = gulp.src( SRC, { base: baseSRC } )
 					.pipe( $.plumber() )
 					.pipe( $.sourcemaps.init() )
 					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
