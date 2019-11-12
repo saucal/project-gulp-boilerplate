@@ -8,6 +8,14 @@ semver = require( 'semver' );
 _      = require( 'underscore' );
 $      = require( 'gulp-load-plugins' )( {pattern: '*'} );
 
+if( path.sep !== '/' ) {
+	var oldJoin = path.join;
+	path.join = function(){
+		var ret = oldJoin.apply(this, arguments);
+		return ret.replace( new RegExp('\\' + path.sep, 'g' ), '/' );
+	};
+}
+
 CONFIG = {
 	production: ! ! $.util.env.production,
 	watch: ! ! $.util.env.watch,
