@@ -1,4 +1,4 @@
-var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC, WATCH;
+var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
 
 gulp   = require( 'gulp' );
 merge  = require( 'merge-stream' );
@@ -162,25 +162,6 @@ _.each(
 	}
 );
 FOLDERS = newFolders;
-
-// Here are defined default file paths to watch
-// change them if you know what you are doing or just stick to folder structure convention
-WATCH = {
-	php: buildPath( MATCH.php ),
-	sass: buildPath( path.join( PATHS.sass, MATCH.sass ) ),
-	css: buildPath( path.join( PATHS.css, MATCH.css ) ),
-	jsSource: buildPath( path.join( PATHS.jsSource, MATCH.js ) ),
-	jsDest: buildPath( path.join( PATHS.jsDest, MATCH.js ) )
-};
-
-// helper function - creates watch paths array based on FOLDERS
-function buildPath( thisPath ) {
-	return FOLDERS.map(
-		function( folderConfig ) {
-			return path.join( folderConfig.folder, thisPath );
-		}
-	);
-}
 
 gulp.task(
 	'zip',
@@ -365,7 +346,15 @@ gulp.task(
 gulp.task(
 	'browser-sync',
 	function(done) {
-		var files = WATCH.css.concat( WATCH.jsDest ).concat( WATCH.php );
+		var files = [];
+		FOLDERS.map(
+			function (folderConfig) {
+				files.push( path.join( folderConfig.folder, folderConfig.PATHS.css, folderConfig.MATCH.css ) );
+				files.push( path.join( folderConfig.folder, folderConfig.PATHS.jsDest, folderConfig.MATCH.js ) );
+				files.push( path.join( folderConfig.folder, folderConfig.MATCH.php ) );
+			}
+		);
+
 		try {
 			DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) );
 		} catch ( e ) {
