@@ -1,4 +1,4 @@
-var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC, WATCH;
+var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
 
 gulp   = require( 'gulp' );
 merge  = require( 'merge-stream' );
@@ -7,6 +7,14 @@ path   = require( 'path' );
 semver = require( 'semver' );
 _      = require( 'underscore' );
 $      = require( 'gulp-load-plugins' )( {pattern: '*'} );
+
+if( path.sep !== '/' ) {
+	var oldJoin = path.join;
+	path.join = function(){
+		var ret = oldJoin.apply(this, arguments);
+		return ret.replace( new RegExp('\\' + path.sep, 'g' ), '/' );
+	};
+}
 
 CONFIG = {
 	production: ! ! $.util.env.production,
@@ -163,25 +171,6 @@ _.each(
 );
 FOLDERS = newFolders;
 
-// Here are defined default file paths to watch
-// change them if you know what you are doing or just stick to folder structure convention
-WATCH = {
-	php: buildPath( MATCH.php ),
-	sass: buildPath( path.join( PATHS.sass, MATCH.sass ) ),
-	css: buildPath( path.join( PATHS.css, MATCH.css ) ),
-	jsSource: buildPath( path.join( PATHS.jsSource, MATCH.js ) ),
-	jsDest: buildPath( path.join( PATHS.jsDest, MATCH.js ) )
-};
-
-// helper function - creates watch paths array based on FOLDERS
-function buildPath( thisPath ) {
-	return FOLDERS.map(
-		function( folderConfig ) {
-			return path.join( folderConfig.folder, thisPath );
-		}
-	);
-}
-
 gulp.task(
 	'zip',
 	function() {
@@ -224,8 +213,8 @@ function map_destination( folderConfig, dest ) {
 	var destRelative = path.relative( assetsPath,destPath );
 
 	var suffix = '';
-	if ( destRelative.substr( 0,1 ) != '.' && destRelative.substr( 0,1 ) != '/' ) {
-		suffix = '/' + destRelative;
+	if ( destRelative.substr( 0,1 ) != '.' && destRelative.substr( 0,1 ) != path.sep ) {
+		suffix = path.sep + destRelative;
 	}
 
 	return {
@@ -243,11 +232,12 @@ gulp.task(
 				var PATHS  = folderConfig.PATHS;
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.sass ) );
-				SRC.unshift( path.join( folder, PATHS.sass, MATCH.sass ) );
+				var baseSRC = path.join( folder, PATHS.sass );
+				SRC.unshift( path.join( baseSRC, MATCH.sass ) );
 
 				var destination = map_destination( folderConfig, PATHS.css );
 
-				return gulp.src( SRC )
+				return gulp.src( SRC, { base: baseSRC } )
 					.pipe( $.plumber() )
 					.pipe( $.sourcemaps.init() )
 					.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
@@ -277,7 +267,8 @@ gulp.task(
 				var PATHS  = folderConfig.PATHS;
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.js ) );
-				SRC.unshift( path.join( folder, PATHS.jsSource, MATCH.js ) );
+				var baseSRC = path.join( folder, PATHS.jsSource );
+				SRC.unshift( path.join( baseSRC, MATCH.js ) );
 
 				var destination = map_destination( folderConfig, PATHS.jsDest );
 
@@ -290,7 +281,7 @@ gulp.task(
 				var folderTasks = [];
 
 				// Do everything not included in the concat
-				var base = gulp.src( SRC )
+				var base = gulp.src( SRC, { base: baseSRC } )
 					.pipe( $.plumber() )
 					.pipe( $.sourcemaps.init() )
 					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
@@ -314,7 +305,7 @@ gulp.task(
 						if ( dest.passthrough ) {
 							var passThroughDest = destination;
 							if ( dest.files.length > 1 || dest.files[0].f.indexOf( '*' ) > -1 ) {
-								passThroughDest = map_destination( folderConfig, PATHS.jsDest + '/' + path.basename( dest.name ) );
+								passThroughDest = map_destination( folderConfig, path.join( PATHS.jsDest, path.basename( dest.name ) ) );
 							}
 							thisDest = gulp.src( [ dest ].getFlattened() )
 								.pipe( $.plumber() )
@@ -363,7 +354,15 @@ gulp.task(
 gulp.task(
 	'browser-sync',
 	function(done) {
-		var files = WATCH.css.concat( WATCH.jsDest ).concat( WATCH.php );
+		var files = [];
+		FOLDERS.map(
+			function (folderConfig) {
+				files.push( path.join( folderConfig.folder, folderConfig.PATHS.css, folderConfig.MATCH.css ) );
+				files.push( path.join( folderConfig.folder, folderConfig.PATHS.jsDest, folderConfig.MATCH.js ) );
+				files.push( path.join( folderConfig.folder, folderConfig.MATCH.php ) );
+			}
+		);
+
 		try {
 			DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) );
 		} catch ( e ) {
@@ -572,7 +571,7 @@ async function do_bump() {
 				diffFilesOnFolder.unshift( folderConfig.info.mainFilePath );
 				diffFilesOnFolder.push( '!**/node_modules/**' ); // exclude node_modules
 
-				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, '/' ) } )
+				gulpSrc = gulp.src( diffFilesOnFolder, { base: path.join( folder, path.sep ) } )
 					.pipe( $.filter( [ MATCH.php ] ) );
 			}
 
@@ -629,7 +628,7 @@ async function getDiffFiles() {
 			if ( diffFile.isDeleted() ) {
 				return false;
 			}
-			return './' + diffFile.newFile().path();
+			return '.' + path.sep + diffFile.newFile().path();
 		}
 	).filter(
 		function(cont){
