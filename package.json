@@ -86,12 +86,6 @@
       "no-unused-vars": "off"
     }
   },
-  "browserslist": [
-    "last 5 versions",
-    "> 1%",
-    "maintained node versions",
-    "not dead"
-  ],
   "author": "SAU/CAL",
   "license": "ISC"
 }
