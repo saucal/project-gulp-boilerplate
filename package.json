@@ -49,11 +49,6 @@
     "wordpress theme",
     "wordpress plugin"
   ],
-  "stylelint": {
-    "extends": [
-      "stylelint-config-wordpress/scss"
-    ]
-  },
   "eslintConfig": {
     "env": {
       "commonjs": true,
