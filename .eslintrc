@@ -1,37 +1,8 @@
 {
+	"extends": [ "plugin:@wordpress/eslint-plugin/es5" ],
 	"env": {
-		"commonjs": true,
-		"es6": false,
-		"node": false
-	},
-	"extends": "eslint:recommended",
-	"globals": {
-		"Atomics": "readonly",
-		"SharedArrayBuffer": "readonly"
-	},
-	"parserOptions": {
-		"ecmaVersion": 2018
-	},
-	"rules": {
-		"indent": [
-			"error",
-			"tab",
-			{
-				"SwitchCase": 1
-			}
-		],
-		"linebreak-style": [
-			"error",
-			"unix"
-		],
-		"quotes": [
-			"error",
-			"single"
-		],
-		"semi": [
-			"error",
-			"always"
-		],
-		"no-unused-vars": "off"
+	  "browser": true,
+	  "commonjs": true,
+	  "node": false
 	}
-}
+  }

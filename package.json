@@ -3,12 +3,11 @@
   "description": "Project Description",
   "version": "0.0.1",
   "main": "gulpfile.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@wordpress/eslint-plugin": "^3.3.0",
     "browser-sync": "^2.26.3",
     "eslint": "^5.15.1",
-    "eslint-config-wordpress": "^2.0.0",
     "gulp": ">=4.0.0",
     "gulp-add-src": "^1.0.0",
     "gulp-autoprefixer": ">=6.0.0",
