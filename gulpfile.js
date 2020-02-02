@@ -1,10 +1,11 @@
-var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
+var $, _, gulp, merge, fs, path, semver, nodegit, phpcs, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC, rootPath, PHPCSConfig;
 
 gulp   = require( 'gulp' );
 merge  = require( 'merge-stream' );
 fs     = require( 'fs' );
 path   = require( 'path' );
 semver = require( 'semver' );
+phpcs  = require( 'gulp-phpcs' );
 _      = require( 'underscore' );
 $      = require( 'gulp-load-plugins' )( {pattern: '*'} );
 
@@ -46,6 +47,14 @@ SRC = {
 	sass: [],
 	js: []
 };
+
+rootPath = process.cwd();
+
+PHPCSConfig = {
+	bin: `${ rootPath }/vendor/bin/phpcs`,
+	standard: 'WordPress-Extra',
+	warningSeverity: 0,
+}
 
 /* Confing: Edit saucal.json to set your folders and domain
 ========================================================= */
@@ -370,6 +379,26 @@ gulp.task(
 		}
 		$.browserSync.init( files, {proxy: DOMAIN} );
 		return done();
+	}
+);
+
+gulp.task(
+	'phpcs',
+	function() {
+		var files = [];
+		FOLDERS.map(
+			function ( folderConfig ) {
+				files.push( path.join( folderConfig.folder, folderConfig.MATCH.php ) );
+				console.log( files );
+			}
+		);
+		return gulp.src( files )
+			.pipe( phpcs( {
+				bin: PHPCSConfig.bin,
+				standard: PHPCSConfig.standard,
+				warningSeverity: PHPCSConfig.warningSeverity
+			} ) )
+			.pipe( phpcs.reporter( 'log' ) );
 	}
 );
 

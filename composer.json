@@ -1,0 +1,17 @@
+{
+    "name": "saucal/project-gulp-boilerplate",
+    "description": "Project Description",
+    "type": "project",
+    "license": "ISC",
+    "require-dev": {
+        "php": ">=7.0",
+        "wp-coding-standards/wpcs": "^2",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.4",
+        "phpcompatibility/php-compatibility": "^9"
+    },
+    "config": {
+      "platform": {
+        "php": "7.0"
+      }
+    }
+}

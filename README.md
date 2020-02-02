@@ -19,6 +19,14 @@ assets
             **.js
 ```
 
+## Requirements
+
+These dependencies are required. Instructions for each dependency can be found on their website.
+
+- [PHP](http://php.net/) 7.0
+- [npm](https://www.npmjs.com/)
+- [Composer](https://getcomposer.org/) (installed globally)
+
 ## Install
 
 ### For only asset compilation
@@ -36,6 +44,10 @@ or
 or
 
 `yarn install`
+
+### Install dependencies
+
+`npm run init` to install all dependencies for Node and Composer.
 
 ## Usage
 
@@ -123,6 +135,12 @@ You can use the `--version` option to target a specific bump. You can use the fo
 - `x.x.x` to set a specific version number. Eg `--version=2.3.4`
 
 For details on which version to bump, read about [Semantic Versioning](https://semver.org/).
+
+### PHPCS
+
+`gulp phpcs`
+
+Will run `phpcs` script from PHP_CodeSniffer and output detected violations of defined coding standard.
 
 ## Configuration
 
