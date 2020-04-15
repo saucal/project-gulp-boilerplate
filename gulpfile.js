@@ -1,6 +1,7 @@
-var $, _, gulp, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
+var $, _, gulp, npmRun, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
 
 gulp   = require( 'gulp' );
+npmRun = require( 'npm-run' );
 merge  = require( 'merge-stream' );
 fs     = require( 'fs' );
 path   = require( 'path' );
@@ -30,8 +31,10 @@ PATHS = {
 	source: '{self.assets}/source',
 	sass: '{self.assets}/source/sass',
 	jsSource: '{self.assets}/source/js',
+	blocksSource: '{self.assets}/source/blocks',
 	css: '{self.assets}/css',
 	jsDest: '{self.assets}/js',
+	blocksDest: '{self.assets}/js/blocks',
 	maps: '{self.assets}/source/_maps'
 };
 
@@ -39,7 +42,8 @@ MATCH = {
 	php: '**/*.php',
 	sass: '**/*.scss',
 	css: '**/*.css',
-	js: '**/*.js'
+	js: '**/*.js',
+	nonRecursiveJS: '*.js'
 };
 
 SRC = {
@@ -265,6 +269,30 @@ gulp.task(
 );
 
 gulp.task(
+	'blocks',
+	function( done ) {
+		FOLDERS.map(
+			function( folderConfig ) {
+				var folder = folderConfig.folder;
+				var PATHS  = folderConfig.PATHS;
+				var MATCH  = folderConfig.MATCH;
+				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.js ) );
+				var baseSRC = path.join( folder, PATHS.blocksSource );
+				SRC.unshift( path.join( baseSRC, MATCH.nonRecursiveJS ) );
+
+				var destination = map_destination( folderConfig, PATHS.blocksDest );
+
+				if ( fs.existsSync( baseSRC ) ) {
+					npmRun.sync( 'wp-scripts build ' + SRC + ' --output-path=' + destination.dest );
+				}
+			}
+		);
+
+		done();
+	}
+);
+
+gulp.task(
 	'js',
 	function() {
 		var tasks = FOLDERS.map(
@@ -384,6 +412,7 @@ var doWatch = function (done) {
 		function (folderConfig) {
 			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) );
 			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) );
+			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.blocksSource, folderConfig.MATCH.js ), gulp.parallel( 'blocks' ) );
 		}
 	);
 };
@@ -606,7 +635,7 @@ gulp.task( 'bump', gulp.series( set_folderinfo, do_bump ) );
 
 gulp.task( 'translate_check', gulp.series( set_folderinfo, do_translate_check ) );
 
-gulp.task( 'build', gulp.parallel( 'sass', 'js' ) );
+gulp.task( 'build', gulp.parallel( 'sass', 'js', 'blocks' ) );
 
 gulp.task( 'package', gulp.series( 'build', 'translate', 'zip' ) );
 
