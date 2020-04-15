@@ -49,10 +49,14 @@ SRC = {
 
 /* Config: Edit projectFolders entry into package.json to set your folders and domain
 ========================================================= */
-var pkgJson = JSON.parse( fs.readFileSync( './package.json' ) );
-
 try {
-	FOLDERS = pkgJson.projectFolders;
+	var pkgJson = JSON.parse( fs.readFileSync( './package.json' ) );
+
+	if ( "projectFolders" in pkgJson ) {
+		FOLDERS = pkgJson.projectFolders;
+	} else {
+		FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
+	}
 } catch ( e ) {
 	FOLDERS = [ '.' ];
 }
