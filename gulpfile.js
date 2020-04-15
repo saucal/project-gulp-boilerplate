@@ -47,12 +47,18 @@ SRC = {
 	js: []
 };
 
-/* Confing: Edit saucal.json to set your folders and domain
+/* Config: Edit project-folders.json or projectFolders entry into package.json to set your folders
 ========================================================= */
 try {
 	FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
 } catch ( e ) {
-	FOLDERS = [ '.' ];
+	var pkgJson = JSON.parse( fs.readFileSync( './package.json' ) );
+
+	if ( "projectFolders" in pkgJson ) {
+		FOLDERS = pkgJson.projectFolders;
+	} else {
+		FOLDERS = [ '.' ];
+	}
 }
 
 Array.prototype.getFiltered = function(type){
