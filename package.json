@@ -38,10 +38,12 @@
     "underscore": "^1.9.1"
   },
   "devDependencies": {
-    "nodegit": "^0.24.1"
+    "nodegit": "^0.26.5"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "format:js": "wp-scripts format-js"
   },
   "browserslist": [
     "last 5 versions",
