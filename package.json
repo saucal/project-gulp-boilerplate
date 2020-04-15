@@ -75,5 +75,9 @@
     "wordpress plugin"
   ],
   "author": "SAU/CAL",
-  "license": "ISC"
+  "license": "ISC",
+  "projectFolders": [
+    "wp-content/plugins/project-plugin",
+    "wp-content/themes/project-theme"
+  ]
 }
