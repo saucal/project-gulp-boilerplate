@@ -43,7 +43,7 @@ MATCH = {
 	sass: '**/*.scss',
 	css: '**/*.css',
 	js: '**/*.js',
-	restrictJS: '*.js'
+	nonRecursiveJS: '*.js'
 };
 
 SRC = {
@@ -272,7 +272,7 @@ gulp.task(
 				var MATCH  = folderConfig.MATCH;
 				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.js ) );
 				var baseSRC = path.join( folder, PATHS.blocksSource );
-				SRC.unshift( path.join( baseSRC, MATCH.restrictJS ) );
+				SRC.unshift( path.join( baseSRC, MATCH.nonRecursiveJS ) );
 
 				var destination = map_destination( folderConfig, PATHS.blocksDest );
 
