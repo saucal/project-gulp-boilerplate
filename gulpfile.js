@@ -47,18 +47,18 @@ SRC = {
 	js: []
 };
 
-/* Config: Edit projectFolders entry into package.json to set your folders and domain
+/* Config: Edit project-folders.json or projectFolders entry into package.json to set your folders
 ========================================================= */
 try {
+	FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
+} catch ( e ) {
 	var pkgJson = JSON.parse( fs.readFileSync( './package.json' ) );
 
 	if ( "projectFolders" in pkgJson ) {
 		FOLDERS = pkgJson.projectFolders;
 	} else {
-		FOLDERS = JSON.parse( fs.readFileSync( './project-folders.json' ) );
+		FOLDERS = [ '.' ];
 	}
-} catch ( e ) {
-	FOLDERS = [ '.' ];
 }
 
 Array.prototype.getFiltered = function(type){
