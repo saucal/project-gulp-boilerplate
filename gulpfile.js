@@ -1,7 +1,8 @@
-var $, _, gulp, npmRun, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
+var $, _, gulp, glob, npmRun, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
 
 gulp   = require( 'gulp' );
 npmRun = require( 'npm-run' );
+glob   = require( 'glob' );
 merge  = require( 'merge-stream' );
 fs     = require( 'fs' );
 path   = require( 'path' );
@@ -283,7 +284,7 @@ gulp.task(
 				var destination = map_destination( folderConfig, PATHS.blocksDest );
 
 				if ( fs.existsSync( baseSRC ) ) {
-					npmRun.sync( 'wp-scripts build ' + SRC + ' --output-path=' + destination.dest );
+					npmRun.sync( 'wp-scripts build ' + glob.sync(SRC.join(' ')).join(' ') + ' --output-path=' + destination.dest );
 				}
 			}
 		);

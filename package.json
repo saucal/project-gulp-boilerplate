@@ -7,6 +7,7 @@
     "@wordpress/eslint-plugin": "^4.1.0",
     "@wordpress/scripts": "^7.2.0",
     "browser-sync": "^2.26.3",
+    "glob": "^7.1.6",
     "gulp": ">=4.0.0",
     "gulp-add-src": "^1.0.0",
     "gulp-autoprefixer": ">=6.0.0",
