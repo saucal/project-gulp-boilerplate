@@ -4,7 +4,18 @@
 .htaccess
 !.gitignore
 !wp-content/
+
+# GH Actions specific
 !.github*
+
+# Build specific
+!package.json
+!package-lock.json
+!.browserslistrc.js
+!.eslintrc.js
+!.eslintignore
+!.stylelintrc.js
+!gulpfile.js
 
 # Ignore everything in the "wp-content" directory, except the "plugins"
 # and "themes" directories.
@@ -35,11 +46,3 @@ wp-content/**/assets/*
 
 #ignore maps
 wp-content/**/assets/source/_maps
-
-!package.json
-!package-lock.json
-!.browserslistrc.js
-!.eslintrc.js
-!.eslintignore
-!.stylelintrc.js
-!gulpfile.js
