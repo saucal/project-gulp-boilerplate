@@ -36,9 +36,6 @@ wp-content/themes/*
 !wp-content/themes/index.php
 !wp-content/themes/theme*
 
-.DS_Store
-node_modules/
-
 # Ignore assets except source files
 wp-content/**/assets/*
 !wp-content/**/assets/source
@@ -46,3 +43,27 @@ wp-content/**/assets/*
 
 #ignore maps
 wp-content/**/assets/source/_maps
+
+# Ignore node_modules everywhere
+node_modules
+
+# Editors
+*.esproj
+*.tmproj
+*.tmproject
+tmtags
+.*.sw[a-z]
+*.un~
+Session.vim
+*.swp
+.vscode
+
+# Mac OSX
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Desktop.ini
