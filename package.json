@@ -35,9 +35,6 @@
     "semver": "^6.0.0",
     "underscore": "^1.9.1"
   },
-  "devDependencies": {
-    "nodegit": "^0.26.5"
-  },
   "scripts": {
     "lint:css": "wp-scripts lint-style",
     "lint:js": "wp-scripts lint-js",

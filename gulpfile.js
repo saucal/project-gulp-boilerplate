@@ -1,4 +1,4 @@
-var $, _, gulp, glob, npmRun, merge, fs, path, semver, nodegit, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
+var $, _, gulp, glob, npmRun, merge, fs, path, semver, CONFIG, FOLDERS, DOMAIN, PATHS, MATCH, SRC;
 
 gulp   = require( 'gulp' );
 npmRun = require( 'npm-run' );
@@ -648,7 +648,7 @@ if ( CONFIG.watch ) {
 }
 
 async function getDiffFiles() {
-	nodegit        = require( 'nodegit' );
+	var nodegit    = require( 'nodegit' );
 	var repository = await nodegit.Repository.open( '.' );
 	var currCommit = await repository.getHeadCommit();
 	var mastCommit = await repository.getMasterCommit();
