@@ -648,7 +648,12 @@ if ( CONFIG.watch ) {
 }
 
 async function getDiffFiles() {
-	var nodegit    = require( 'nodegit' );
+	try {
+		var nodegit    = require( 'nodegit' );
+	} catch( e ) {
+		console.error( "Please run `npm install nodegit` to use this command.")
+		process.exit( 1 );
+	}
 	var repository = await nodegit.Repository.open( '.' );
 	var currCommit = await repository.getHeadCommit();
 	var mastCommit = await repository.getMasterCommit();
