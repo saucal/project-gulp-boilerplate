@@ -38,6 +38,7 @@ wp-content/themes/*
 
 # Ignore assets except source files
 wp-content/**/assets/*
+!wp-content/**/assets/index.php
 !wp-content/**/assets/source
 !wp-content/**/assets/images
 
