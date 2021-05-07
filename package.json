@@ -5,7 +5,7 @@
   "main": "gulpfile.js",
   "dependencies": {
     "@wordpress/eslint-plugin": "^4.1.0",
-    "@wordpress/scripts": "^7.2.0",
+    "@wordpress/scripts": "^15.0.1",
     "@wordpress/stylelint-config": "^19.0.1",
     "autoprefixer": "^10.2.5",
     "browser-sync": "^2.26.14",
