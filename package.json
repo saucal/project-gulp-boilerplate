@@ -59,7 +59,7 @@
     "js": "for d in $npm_package_folders; do export local_files; local_files=\"${d}/${npm_package_assets_js_src}\"; export local_out; local_out=\"${d}/${npm_package_assets_js_out}\"; npm run js:unminified; npm run js:minified; done;",
     "js:unminified": "for f in $local_files**/*.js; do relative=$(realpath --relative-to=\"$local_files\" \"$f\"); file=${f%.js}; mkdir -p \"${local_out}$(dirname $relative)\"; cp -f \"$f\" \"${local_out}${relative}\"; done",
     "js:minified": "for f in $local_out**/*.js; do relative=$(realpath --relative-to=\"$local_out\" \"$f\"); file=\"${local_out}${relative}\"; file=\"${file%.js}\"; uglifyjs $f -c -m --output $file.min.js; done",
-    "watch": "concurrently \"npm run watch:css\" \"npm run watch:js\"",
+    "watch": "concurrently \"npm:watch:*\"",
     "watch:css": "files=\"\";for d in $npm_package_folders; do files=\"${files} ${d}/${npm_package_assets_css_src}**/*.scss\"; done; onchange -k -i $files -- npm run sass",
     "watch:js": "files=\"\";for d in $npm_package_folders; do files=\"${files} ${d}/${npm_package_assets_js_src}**/*.js\"; done; onchange -k -i $files -- npm run js",
     "lint:css": "wp-scripts lint-style",
