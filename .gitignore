@@ -16,6 +16,7 @@
 !.eslintignore
 !.stylelintrc.js
 !gulpfile.js
+!lerna.json
 
 # Ignore everything in the "wp-content" directory, except the "plugins"
 # and "themes" directories.

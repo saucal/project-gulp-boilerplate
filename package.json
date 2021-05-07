@@ -29,6 +29,7 @@
     "gulp-util": "^3.0.8",
     "gulp-vinyl-zip": "^2.1.2",
     "gulp-wp-pot": "^2.3.4",
+    "lerna": "^4.0.0",
     "merge-stream": "^1.0.1",
     "npm-run": "^5.0.1",
     "path": ">=0.12.7",
@@ -52,6 +53,7 @@
   },
   "domain": "project-domain.test",
   "scripts": {
+    "prepare": "lerna bootstrap --hoist",
     "presass": "for d in $npm_package_folders; do rm -rf \"${d}/${npm_package_assets_css_out}\"; done;",
     "sass": "for d in $npm_package_folders; do export local_dir; local_dir=\"${d}/${npm_package_assets_css_src}\"; export local_out; local_out=\"${d}/${npm_package_assets_css_out}\"; npm run sass:unminified; npm run sass:minified ; done;",
     "sass:unminified": "sass --no-source-map --style=expanded $local_dir:$local_out && postcss \"${local_out}\" --base \"${local_out}\" --dir \"${local_out}\" --no-map --use autoprefixer",
