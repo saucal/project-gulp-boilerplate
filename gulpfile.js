@@ -450,27 +450,6 @@ var textDomainFunctions = [ //List keyword specifications
 	'_nx_noop:1,2,3c,4d'
 ];
 
-var do_translate_check = function() {
-	var tasks = FOLDERS.map(
-		function( folderConfig ) {
-			var folder = folderConfig.folder;
-			var PATHS  = folderConfig.PATHS;
-			var MATCH  = folderConfig.MATCH;
-			return gulp
-				.src( path.join( folder, MATCH.php ) )
-				.pipe(
-					$.checktextdomain(
-						{
-							text_domain: folderConfig.info.text_domain, //Specify allowed domain(s)
-							keywords: textDomainFunctions,
-						}
-					)
-				);
-		}
-	);
-	return merge( tasks );
-};
-
 async function do_bump() {
 	var versionBump = false;
 	var levelBump   = false;
@@ -556,8 +535,6 @@ async function do_bump() {
 }
 
 gulp.task( 'bump', gulp.series( set_folderinfo, do_bump ) );
-
-gulp.task( 'translate_check', gulp.series( set_folderinfo, do_translate_check ) );
 
 gulp.task( 'build', gulp.parallel( 'js', 'blocks' ) );
 
