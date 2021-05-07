@@ -20,8 +20,6 @@ if( path.sep !== '/' ) {
 
 CONFIG = {
 	production: ! ! $.util.env.production,
-	watch: ! ! $.util.env.watch,
-	bs: ! ! $.util.env.bs,
 	noprefix: ! ! $.util.env.noprefix
 };
 
@@ -351,45 +349,6 @@ gulp.task(
 	}
 );
 
-gulp.task(
-	'browser-sync',
-	function(done) {
-		var files = [];
-		FOLDERS.map(
-			function (folderConfig) {
-				files.push( path.join( folderConfig.folder, folderConfig.PATHS.css, folderConfig.MATCH.css ) );
-				files.push( path.join( folderConfig.folder, folderConfig.PATHS.jsDest, folderConfig.MATCH.js ) );
-				files.push( path.join( folderConfig.folder, folderConfig.MATCH.php ) );
-			}
-		);
-
-		try {
-			DOMAIN = JSON.parse( fs.readFileSync( './dev-domain.json' ) );
-		} catch ( e ) {
-			return done( e );
-		}
-		$.browserSync.init( files, {proxy: DOMAIN} );
-		return done();
-	}
-);
-
-var doWatch = function (done) {
-	FOLDERS.map(
-		function (folderConfig) {
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) );
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.blocksSource, folderConfig.MATCH.js ), gulp.parallel( 'blocks' ) );
-		}
-	);
-};
-var watch_task;
-if ( CONFIG.bs ) {
-	watch_task = gulp.series( 'browser-sync', doWatch );
-} else {
-	watch_task = doWatch;
-}
-
-gulp.task( 'watch', watch_task );
-
 function set_folderinfo( resolve ) {
 	var tasks = FOLDERS.map(
 		function( folderConfig ) {
@@ -605,11 +564,7 @@ gulp.task( 'build', gulp.parallel( 'js', 'blocks' ) );
 gulp.task( 'package', gulp.series( 'build', 'translate', 'zip' ) );
 
 var default_task;
-if ( CONFIG.watch ) {
-	default_task = gulp.series( 'build', 'watch' );
-} else {
-	default_task = gulp.series( 'build' );
-}
+default_task = gulp.series( 'build' );
 
 async function getDiffFiles() {
 	try {
