@@ -235,41 +235,6 @@ function map_destination( folderConfig, dest ) {
 }
 
 gulp.task(
-	'sass',
-	function() {
-		var tasks = FOLDERS.map(
-			function( folderConfig ) {
-				var folder = folderConfig.folder;
-				var PATHS  = folderConfig.PATHS;
-				var MATCH  = folderConfig.MATCH;
-				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.sass ) );
-				var baseSRC = path.join( folder, PATHS.sass );
-				SRC.unshift( path.join( baseSRC, MATCH.sass ) );
-
-				var destination = map_destination( folderConfig, PATHS.css );
-
-				return gulp.src( SRC, { base: baseSRC } )
-					.pipe( $.plumber() )
-					.pipe( $.sourcemaps.init() )
-					.pipe( $.sass( { precision: 10 } ).on( 'error', $.sass.logError ) )
-					.pipe( ! CONFIG.noprefix ? $.autoprefixer() : $.util.noop() )
-					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-					.pipe( $.cached( 'sass' ) )
-					.pipe( gulp.dest( destination.dest ) )
-					.pipe( $.filter( '**/*.css' ) )
-					.pipe( $.cleanCss() )
-					.pipe( $.rename( {suffix: '.min'} ) )
-					.pipe( ! CONFIG.production ? $.sourcemaps.write( destination.maps ) : $.util.noop() )
-					.pipe( $.cached( 'sass' ) )
-					.pipe( gulp.dest( destination.dest ) )
-					.pipe( $.size( {title: folder + ' css'} ) );
-			}
-		);
-		return merge( tasks );
-	}
-);
-
-gulp.task(
 	'blocks',
 	function( done ) {
 		FOLDERS.map(
@@ -411,7 +376,6 @@ gulp.task(
 var doWatch = function (done) {
 	FOLDERS.map(
 		function (folderConfig) {
-			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.sass, folderConfig.MATCH.sass ), gulp.parallel( 'sass' ) );
 			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.jsSource, folderConfig.MATCH.js ), gulp.parallel( 'js' ) );
 			gulp.watch( path.join( folderConfig.folder, folderConfig.PATHS.blocksSource, folderConfig.MATCH.js ), gulp.parallel( 'blocks' ) );
 		}
@@ -636,7 +600,7 @@ gulp.task( 'bump', gulp.series( set_folderinfo, do_bump ) );
 
 gulp.task( 'translate_check', gulp.series( set_folderinfo, do_translate_check ) );
 
-gulp.task( 'build', gulp.parallel( 'sass', 'js', 'blocks' ) );
+gulp.task( 'build', gulp.parallel( 'js', 'blocks' ) );
 
 gulp.task( 'package', gulp.series( 'build', 'translate', 'zip' ) );
 
