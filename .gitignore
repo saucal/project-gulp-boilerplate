@@ -36,11 +36,10 @@ wp-content/themes/*
 !wp-content/themes/index.php
 !wp-content/themes/theme*
 
-# Ignore assets except source files
-wp-content/**/assets/*
-!wp-content/**/assets/index.php
-!wp-content/**/assets/source
-!wp-content/**/assets/images
+# Ignore compiled assets
+wp-content/**/assets/css*
+wp-content/**/assets/js*
+wp-content/**/blocks/dist*
 
 #ignore maps
 wp-content/**/assets/source/_maps
