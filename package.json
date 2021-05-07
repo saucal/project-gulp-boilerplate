@@ -60,6 +60,7 @@
     "js": "for d in $npm_package_folders; do export local_files; local_files=\"${d}/${npm_package_assets_js_src}\"; export local_out; local_out=\"${d}/${npm_package_assets_js_out}\"; npm run js:unminified; npm run js:minified; done;",
     "js:unminified": "for f in $local_files**/*.js; do relative=$(realpath --relative-to=\"$local_files\" \"$f\"); file=${f%.js}; mkdir -p \"${local_out}$(dirname $relative)\"; cp -f \"$f\" \"${local_out}${relative}\"; done",
     "js:minified": "for f in $local_out**/*.js; do relative=$(realpath --relative-to=\"$local_out\" \"$f\"); file=\"${local_out}${relative}\"; file=\"${file%.js}\"; uglifyjs $f -c -m --output $file.min.js; done",
+    "blocks": "wp_scripts=\"$(pwd)/node_modules/.bin/wp-scripts\"; for d in $npm_package_folders; do if [ -f \"${d}/block.json\" ]; then cd \"$d\"; \"$wp_scripts\" build; fi; done;",
     "watch": "concurrently \"npm:watch:*\"",
     "watch:css": "files=();for d in $npm_package_folders; do files+=(\"${d}/${npm_package_assets_css_src}**/*.scss\"); done; chokidar \"${files[@]}\" -c \"npm run sass\"",
     "watch:js": "files=();for d in $npm_package_folders; do files+=(\"${d}/${npm_package_assets_js_src}**/*.js\"); done; chokidar \"${files[@]}\" -c \"npm run js\"",

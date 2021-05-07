@@ -45,6 +45,9 @@ wp-content/**/assets/*
 #ignore maps
 wp-content/**/assets/source/_maps
 
+# Plugins created with @wordpress/create-block 
+wp-content/plugins/*/build
+
 # Ignore node_modules everywhere
 node_modules
 
