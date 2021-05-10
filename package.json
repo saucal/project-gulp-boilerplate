@@ -16,30 +16,6 @@
     "browsersync:list": "files=\"$(lerna exec --concurrency 1 --no-prefix -- npm run browsersync:list --if-present --silent)\"; echo \"${files/$'\n'/, }\"",
     "browsersync:serve": "browser-sync start --no-open --proxy \"$npm_package_domain\" --files \"$(npm run browsersync:list --silent)\""
   },
-  "browserslist": [
-    "last 5 versions",
-    "> 1%",
-    "maintained node versions",
-    "not dead"
-  ],
-  "eslintConfig": {
-    "extends": [
-      "plugin:@wordpress/eslint-plugin/es5"
-    ],
-    "env": {
-      "browser": true,
-      "commonjs": true,
-      "node": false
-    }
-  },
-  "stylelint": {
-    "extends": [
-      "@wordpress/stylelint-config/scss"
-    ],
-    "rules": {
-      "no-descending-specificity": null
-    }
-  },
   "author": "SAU/CAL",
   "license": "ISC"
 }
