@@ -40,11 +40,6 @@
       "no-descending-specificity": null
     }
   },
-  "keywords": [
-    "wordpress",
-    "wordpress theme",
-    "wordpress plugin"
-  ],
   "author": "SAU/CAL",
   "license": "ISC"
 }
