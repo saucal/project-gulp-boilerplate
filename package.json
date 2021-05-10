@@ -26,7 +26,6 @@
     "gulp-sourcemaps": "^2.6.5",
     "gulp-util": "^3.0.8",
     "gulp-vinyl-zip": "^2.1.2",
-    "gulp-wp-pot": "^2.3.4",
     "lerna": "^4.0.0",
     "merge-stream": "^1.0.1",
     "npm-run": "^5.0.1",

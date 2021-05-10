@@ -402,54 +402,6 @@ function set_folderinfo( resolve ) {
 	return merge( tasks );
 }
 
-var do_translate = function() {
-	var tasks = FOLDERS.map(
-		function( folderConfig ) {
-			var folder   = folderConfig.folder;
-			var langPath = folderConfig.info.langPath;
-			var PATHS    = folderConfig.PATHS;
-			var MATCH    = folderConfig.MATCH;
-			if ( langPath ) {
-				langPath += '/';
-			} else {
-				langPath = 'languages/';
-			}
-
-			return gulp.src( path.join( folder, MATCH.php ) )
-				.pipe(
-					$.wpPot(
-						{
-							domain: folderConfig.info.text_domain,
-							headers: false
-						}
-					)
-				)
-				.pipe( gulp.dest( path.join( folder, langPath, folderConfig.info.text_domain + '.pot' ) ) )
-				.pipe( $.size( {title: folder + ' pot'} ) );
-		}
-	);
-	return merge( tasks );
-};
-
-gulp.task( 'translate', gulp.series( set_folderinfo, do_translate ) );
-
-var textDomainFunctions = [ //List keyword specifications
-	'__:1,2d',
-	'_e:1,2d',
-	'_x:1,2c,3d',
-	'esc_html__:1,2d',
-	'esc_html_e:1,2d',
-	'esc_html_x:1,2c,3d',
-	'esc_attr__:1,2d',
-	'esc_attr_e:1,2d',
-	'esc_attr_x:1,2c,3d',
-	'_ex:1,2c,3d',
-	'_n:1,2,4d',
-	'_nx:1,2,4c,5d',
-	'_n_noop:1,2,3d',
-	'_nx_noop:1,2,3c,4d'
-];
-
 async function do_bump() {
 	var versionBump = false;
 	var levelBump   = false;
@@ -538,7 +490,7 @@ gulp.task( 'bump', gulp.series( set_folderinfo, do_bump ) );
 
 gulp.task( 'build', gulp.parallel( 'js', 'blocks' ) );
 
-gulp.task( 'package', gulp.series( 'build', 'translate', 'zip' ) );
+gulp.task( 'package', gulp.series( 'build', 'zip' ) );
 
 var default_task;
 default_task = gulp.series( 'build' );
