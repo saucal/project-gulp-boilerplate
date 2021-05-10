@@ -30,10 +30,8 @@ PATHS = {
 	source: '{self.assets}/source',
 	sass: '{self.assets}/source/sass',
 	jsSource: '{self.assets}/source/js',
-	blocksSource: '{self.assets}/source/blocks',
 	css: '{self.assets}/css',
 	jsDest: '{self.assets}/js',
-	blocksDest: '{self.assets}/js/blocks',
 	maps: '{self.assets}/source/_maps'
 };
 
@@ -42,7 +40,6 @@ MATCH = {
 	sass: '**/*.scss',
 	css: '**/*.css',
 	js: '**/*.js',
-	nonRecursiveJS: '*.js'
 };
 
 SRC = {
@@ -231,30 +228,6 @@ function map_destination( folderConfig, dest ) {
 		maps: path.relative( destPath, mapsPath ) + suffix
 	};
 }
-
-gulp.task(
-	'blocks',
-	function( done ) {
-		FOLDERS.map(
-			function( folderConfig ) {
-				var folder = folderConfig.folder;
-				var PATHS  = folderConfig.PATHS;
-				var MATCH  = folderConfig.MATCH;
-				var SRC    = JSON.parse( JSON.stringify( folderConfig.SRC.js ) );
-				var baseSRC = path.join( folder, PATHS.blocksSource );
-				SRC.unshift( path.join( baseSRC, MATCH.nonRecursiveJS ) );
-
-				var destination = map_destination( folderConfig, PATHS.blocksDest );
-
-				if ( fs.existsSync( baseSRC ) ) {
-					npmRun.sync( 'wp-scripts build ' + glob.sync(SRC.join(' ')).join(' ') + ' --output-path=' + destination.dest );
-				}
-			}
-		);
-
-		done();
-	}
-);
 
 gulp.task(
 	'js',
@@ -488,7 +461,7 @@ async function do_bump() {
 
 gulp.task( 'bump', gulp.series( set_folderinfo, do_bump ) );
 
-gulp.task( 'build', gulp.parallel( 'js', 'blocks' ) );
+gulp.task( 'build', gulp.parallel( 'js' ) );
 
 gulp.task( 'package', gulp.series( 'build', 'zip' ) );
 
