@@ -49,9 +49,7 @@
   "scripts": {
     "prepare": "lerna bootstrap --hoist",
     "build": "lerna run build --parallel",
-    "watch": "concurrently \"npm:watch:*\"",
-    "watch:css": "files=();for d in $npm_package_folders; do files+=(\"${d}/${npm_package_assets_css_src}**/*.scss\"); done; chokidar \"${files[@]}\" -c \"npm run sass\"",
-    "watch:js": "files=();for d in $npm_package_folders; do files+=(\"${d}/${npm_package_assets_js_src}**/*.js\"); done; chokidar \"${files[@]}\" -c \"npm run js\"",
+    "watch": "lerna run watch --parallel",
     "browsersync": "concurrently --raw \"npm:watch\" \"npm:browsersync:serve\"",
     "browsersync:serve": "files=\"\";for d in $npm_package_folders; do files=\"${files}, ${d}/${npm_package_assets_css_out}**/*.css, ${d}/${npm_package_assets_js_out}**/*.js\"; done; files=\"${files#, }\"; browser-sync start --proxy \"$npm_package_domain\" --files \"${files}\"",
     "lint:css": "wp-scripts lint-style",
