@@ -177,41 +177,6 @@ _.each(
 );
 FOLDERS = newFolders;
 
-gulp.task(
-	'zip',
-	function() {
-		var tasks = FOLDERS.map(
-			function( folderConfig ) {
-				var folder   = folderConfig.folder;
-				var basename = path.basename( path.resolve( folder ) );
-				var filename = path.join( folder, basename + '.zip' );
-				try {
-					fs.unlinkSync( filename );
-				} catch ( e ) {
-					// do nothing
-				}
-				return gulp.src(
-					[
-						folder + '/**/*',
-						'!**/node_modules/**',
-						'!**/gulpfile.js',
-						'!**/.DS_Store',
-						'!**/package.json',
-						'!**/package-lock.json',
-						'!**/.git/**'
-					],
-					{
-						base: path.join( folder, '..' ),
-					}
-				)
-					.pipe( $.vinylZip.dest( filename ) )
-					.pipe( $.size( {title: folder + ' zip'} ) );
-			}
-		);
-		return merge( tasks );
-	}
-);
-
 function map_destination( folderConfig, dest ) {
 	var assetsPath   = path.join( folderConfig.folder, folderConfig.PATHS.assets );
 	var destPath     = path.join( folderConfig.folder, dest );
