@@ -8,7 +8,6 @@
     "@wordpress/scripts": "^15.0.1",
     "@wordpress/stylelint-config": "^19.0.1",
     "browser-sync": "^2.26.14",
-    "chokidar-cli": "^2.1.0",
     "concurrently": "^6.0.2",
     "glob": "^7.1.6",
     "gulp": ">=4.0.0",
@@ -35,23 +34,14 @@
     "semver": "^6.0.0",
     "underscore": "^1.9.1"
   },
-  "assets": {
-    "js": {
-      "src": "assets/source/js/",
-      "out": "assets/js/"
-    },
-    "css": {
-      "src": "assets/source/sass/",
-      "out": "assets/css/"
-    }
-  },
   "domain": "project-domain.test",
   "scripts": {
     "prepare": "lerna bootstrap --hoist",
     "build": "lerna run build --parallel",
     "watch": "lerna run watch --parallel",
     "browsersync": "concurrently --raw \"npm:watch\" \"npm:browsersync:serve\"",
-    "browsersync:serve": "files=\"\";for d in $npm_package_folders; do files=\"${files}, ${d}/${npm_package_assets_css_out}**/*.css, ${d}/${npm_package_assets_js_out}**/*.js\"; done; files=\"${files#, }\"; browser-sync start --proxy \"$npm_package_domain\" --files \"${files}\"",
+    "browsersync:list": "files=\"$(lerna exec --concurrency 1 --no-prefix -- npm run browsersync:list --if-present --silent)\"; echo \"${files/$'\n'/, }\"",
+    "browsersync:serve": "browser-sync start --no-open --proxy \"$npm_package_domain\" --files \"$(npm run browsersync:list --silent)\"",
     "lint:css": "wp-scripts lint-style",
     "lint:js": "wp-scripts lint-js",
     "format:js": "wp-scripts format-js"
