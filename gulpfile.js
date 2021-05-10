@@ -322,59 +322,6 @@ gulp.task(
 	}
 );
 
-function set_folderinfo( resolve ) {
-	var tasks = FOLDERS.map(
-		function( folderConfig ) {
-			var folder = folderConfig.folder;
-			return gulp
-				.src( [ path.join( folder, '*.php' ), path.join( folder, '*.css' ) ] )
-				.pipe(
-					$.filter(
-						function(_thisPath){
-							var thisPath = path.join( folder, _thisPath.relative );
-							var phpFile  = fs.readFileSync( thisPath );
-
-							const regex = /^(?:\s+\*\s+)?(.+?):\s+(.+)$/gm;
-							let m;
-
-							var data = {
-								mainFilePath: '',
-								text_domain: '',
-								langPath: '',
-								version: '',
-							};
-
-							while ((m = regex.exec( phpFile )) !== null) {
-								// This is necessary to avoid infinite loops with zero-width matches
-								if (m.index === regex.lastIndex) {
-									regex.lastIndex++;
-								}
-
-								if ( m[1] == 'Text Domain' && m[2] ) {
-									data.text_domain = m[2];
-								}
-
-								if ( m[1] == 'Domain Path' && m[2] ) {
-									data.langPath = m[2].substr( 1 );
-								}
-
-								if ( m[1] == 'Version' && m[2] ) {
-									data.version = m[2];
-								}
-							}
-
-							if ( data.version ) {
-								data.mainFilePath = thisPath;
-								folderConfig.info = data;
-							}
-						}
-					)
-				);
-		}
-	);
-	return merge( tasks );
-}
-
 gulp.task( 'build', gulp.parallel( 'js' ) );
 
 gulp.task( 'package', gulp.series( 'build', 'zip' ) );
