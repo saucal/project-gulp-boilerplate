@@ -3,6 +3,7 @@
 *.log
 .htaccess
 !.gitignore
+!README.md
 !wp-content/
 
 # GH Actions specific
