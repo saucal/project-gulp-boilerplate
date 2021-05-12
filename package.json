@@ -1,7 +1,7 @@
 {
   "name": "project-name",
   "description": "Project Description",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "dependencies": {
     "browser-sync": "^2.26.14",
     "concurrently": "^6.0.2",
