@@ -1,2 +1,75 @@
+# Ignore everything in the root except the "wp-content" directory.
+/*
+*.log
+.htaccess
+!.gitignore
+!README.md
+!wp-content/
+
+# GH Actions specific
+!.github*
+
+# Build specific
+!package.json
+!package-lock.json
+!.browserslistrc.js
+!.eslintrc.js
+!.eslintignore
+!.stylelintrc.js
+!gulpfile.js
+!lerna.json
+!.npmrc
+
+# Ignore everything in the "wp-content" directory, except the "plugins"
+# and "themes" directories.
+wp-content/*
+!wp-content/plugins/
+!wp-content/themes/
+!wp-content/index.php
+
+# Ignore everything in the "plugins" directory, except the plugins you
+# specify (see the commented-out examples for hints on how to do this.)
+wp-content/plugins/*
+!wp-content/plugins/index.php
+!wp-content/plugins/plugin*
+
+# Ignore everything in the "themes" directory, except the themes you
+# specify (see the commented-out example for a hint on how to do this.)
+wp-content/themes/*
+!wp-content/themes/index.php
+!wp-content/themes/theme*
+
+# Ignore compiled assets
+wp-content/**/assets/css*
+wp-content/**/assets/js*
+wp-content/**/blocks/dist*
+
+#ignore maps
+wp-content/**/assets/source/_maps
+
+# Plugins created with @wordpress/create-block 
+wp-content/plugins/*/build
+
+# Ignore node_modules everywhere
 node_modules
+
+# Editors
+*.esproj
+*.tmproj
+*.tmproject
+tmtags
+.*.sw[a-z]
+*.un~
+Session.vim
+*.swp
+.vscode
+
+# Mac OSX
 .DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Desktop.ini
