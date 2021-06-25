@@ -7,14 +7,13 @@
     "concurrently": "^6.0.2",
     "lerna": "^4.0.0"
   },
-  "domain": "project-domain.test",
   "scripts": {
     "prepare": "lerna bootstrap --hoist",
     "build": "lerna run build --parallel",
     "watch": "lerna run watch --parallel",
     "browsersync": "concurrently --raw \"npm:watch\" \"npm:browsersync:serve\"",
     "browsersync:list": "files=\"$(lerna exec --concurrency 1 --no-prefix -- npm run browsersync:list --if-present --silent)\"; echo \"${files/$'\n'/, }\"",
-    "browsersync:serve": "browser-sync start --no-open --proxy \"$npm_package_domain\" --files \"$(npm run browsersync:list --silent)\""
+    "browsersync:serve": "browser-sync start --no-open --proxy \"$( tr -d '\t\n\r\"' < dev-domain.json )\" --files \"$(npm run browsersync:list --silent)\""
   },
   "author": "SAU/CAL",
   "license": "ISC"
